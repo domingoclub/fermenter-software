@@ -4,6 +4,7 @@ import time
 import displayio
 import terminalio
 import rotaryio
+import pwmio
 from digitalio import DigitalInOut, Direction, Pull
 import adafruit_mcp9808
 import adafruit_displayio_sh1106
@@ -11,13 +12,15 @@ from adafruit_display_text import label
 import adafruit_rgbled
 
 # Variables
-TEMP_SET = 30
-TEMP_MARGIN = 1
 fan_on = False
 heat_on = False
 temp = 0.0
 temp_set = 30.0
-timer_set = 30.0
+temp_margin = 1
+timer_set = 0.0
+edit_mode = False
+fan_freq = 0
+fan_freq_max = 40
 current_screen = "temp_display"
 
 # Sensor
@@ -90,16 +93,34 @@ def display_screen(screen):
         label_area.text = "Temperature"
         update_temp(temp)
     if screen == "temp_set":
-        label_area.text = "Set temperature"
+        label_area.text = "Set: Temperature"
         value_area.text = "{} C".format(round(temp_set, 1))
     if screen == "timer_set":
-        label_area.text = "Set timer"
-        value_area.text = "{} H".format(round(timer_set, 1))
+        label_area.text = "Set: Timer"
+        value_area.text = "soon"
 
 def update_temp(temp):
     tempText = "{} C".format(round(temp, 1))
     value_area.text = tempText
 
+def button_handler(screen):
+    global edit_mode
+    if screen == "temp_set":
+        if edit_mode == False:
+            value_area.color=0x000000
+            value_area.background_color=0xFFFFFF
+            edit_mode = True
+        else:
+            value_area.color=0xFFFFFF
+            value_area.background_color=0x000000
+            edit_mode = False
+
+def edit_handler(pos):
+    global temp_set
+    if current_screen == "temp_set":
+        if pos == "plus": temp_set += 1
+        if pos == "minus": temp_set -= 1
+        update_temp(temp_set)
 
 display_screen(current_screen)
 
@@ -110,15 +131,9 @@ while True:
     if current_screen == "temp_display":
         update_temp(temp)
 
-    # Led color
-    if temp > 23.5:
-        led.color = (0, 30, 0)
-    else:
-        led.color = (30, 0, 0)
-
     # Button
     if BTN.value is False and not btn_down:
-        print('button pressed')
+        button_handler(current_screen)
         btn_down = True
     if BTN.value is True and btn_down:
         btn_down = False
@@ -127,9 +142,33 @@ while True:
     position = encoder.position
     if last_position is None or position != last_position:
         if position > last_position:
-            menu_handler('prev')
+            edit_handler('minus') if edit_mode else menu_handler('prev')
         else:
-            menu_handler('next')
+            edit_handler('plus') if edit_mode else menu_handler('next')
     last_position = position
 
-    # time.sleep(0.1)
+    # Actions
+    if temp < temp_set - temp_margin:
+        led.color = (30, 0, 0)
+        HEAT.value = True
+        if fan_freq < fan_freq_max/3:
+            FAN.value = True
+        elif fan_freq_max/3 <= fan_freq < fan_freq_max:
+            FAN.value = False
+        else:
+            fan_freq = 0
+        fan_freq += 1
+        print(fan_freq)
+        print('Fermenter is heating up')
+    elif temp > temp_set + temp_margin:
+        led.color = (0, 0, 30)
+        HEAT.value = False
+        FAN.value = True
+        print('Fermenter is cooling down')
+    else:
+        led.color = (0, 30, 0)
+        HEAT.value = False
+        FAN.value = False
+        print('Fermenter is at the desired temperature')
+
+    time.sleep(0.1)
