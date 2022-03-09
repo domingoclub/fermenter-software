@@ -5,6 +5,7 @@ import displayio
 import terminalio
 import rotaryio
 import pwmio
+import math
 from digitalio import DigitalInOut, Direction, Pull
 import adafruit_mcp9808
 import adafruit_displayio_sh1106
@@ -88,19 +89,23 @@ def menu_handler(pos):
     current_screen = next_screen
     display_screen(current_screen)
 
+def round_down(n, decimals=0):
+    multiplier = 10 ** decimals
+    return math.floor(n * multiplier) / multiplier
+
 def display_screen(screen):
     if screen == "temp_display":
         label_area.text = "Temperature"
         update_temp(temp)
     if screen == "temp_set":
         label_area.text = "Set: Temperature"
-        value_area.text = "{} C".format(round(temp_set, 1))
+        value_area.text = "{} C".format(round_down(temp_set, 1))
     if screen == "timer_set":
         label_area.text = "Set: Timer"
         value_area.text = "soon"
-
+ 
 def update_temp(temp):
-    tempText = "{} C".format(round(temp, 1))
+    tempText = "{} C".format(round_down(temp, 1))
     value_area.text = tempText
 
 def button_handler(screen):
@@ -125,6 +130,7 @@ def edit_handler(pos):
 display_screen(current_screen)
 
 while True:
+    time.sleep(0.25)
     
     # Temperature
     temp = sensor.temperature
@@ -171,4 +177,3 @@ while True:
         FAN.value = False
         print('Fermenter is at the desired temperature')
 
-    time.sleep(0.1)
