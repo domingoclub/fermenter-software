@@ -21,7 +21,7 @@ temp_margin = 1
 timer_set = 0.0
 edit_mode = False
 fan_freq = 0
-fan_freq_max = 40
+fan_freq_max = 20
 current_screen = "temp_display"
 
 # Sensor
@@ -157,9 +157,9 @@ while True:
     if temp < temp_set - temp_margin:
         led.color = (30, 0, 0)
         HEAT.value = True
-        if fan_freq < fan_freq_max/3:
+        if fan_freq < fan_freq_max/10:
             FAN.value = True
-        elif fan_freq_max/3 <= fan_freq < fan_freq_max:
+        elif fan_freq_max/10 <= fan_freq < fan_freq_max:
             FAN.value = False
         else:
             fan_freq = 0
@@ -176,4 +176,3 @@ while True:
         HEAT.value = False
         FAN.value = False
         print('Fermenter is at the desired temperature')
-
