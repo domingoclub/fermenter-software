@@ -63,30 +63,37 @@ class fermenter:
         self.screen.append(self.menu_right_area)
 
         # Outputs
-        self.FAN = pwmio.PWMOut(board.GP6, frequency=1000)
-        self.HEAT = pwmio.PWMOut(board.GP7, frequency=1000)
+        self.FAN = pwmio.PWMOut(board.GP6, frequency=80)
+        # self.FAN.duty_cycle = 2 ** 15
+        # self.HEAT = pwmio.PWMOut(board.GP7)
+        # self.HEAT.duty_cycle = 2 ** 15
 
-    def update_temp(self):
+    def update_temp(self): 
         self.temp = self.sensor.temperature
         return self.temp
     
     def heating_system(self, temp):
-        temp_error = abs(self.TEMP_SET - temp*4)
-        temp_power = simpleio.map_range(temp_error, -20, 20, 200, 1000)
+        temp_error = abs(self.TEMP_SET - temp)
+        temp_power = simpleio.map_range(temp_error, 0, 5, 0, 100)
         if temp < self.TEMP_MIN:
-            self.HEAT.duty_cycle = int(temp_power)
-            self.FAN.duty_cycle = 1000
+            # self.HEAT.duty_cycle = int(temp_power)
+            # self.HEAT.duty_cycle = duty_cycles_percent(50)
+            self.FAN.duty_cycle = duty_cycles_percent(temp_power)
             # self.FAN.duty_cycle = int(temp_power / 3) if temp_power / 3 > 200 else 200
-            print('Fermenter heating up')
+            print('Error: ' + str(temp_error) + ' — Temp: ' + str(temp) + ' — Power: ' + str(temp_power))
+            # print('Fermenter heating up. Current: ' + str(temp))
         elif temp > self.TEMP_MAX:
             self.FAN.duty_cycle = int(temp_power)
-            self.HEAT.duty_cycle = 0
-            print('Fermenter cooling down')
+            # self.HEAT.duty_cycle = 0
+            print('Fermenter cooling down. Current: ' + str(temp))
         else:
-            self.HEAT.duty_cycle = 0
+            # self.HEAT.duty_cycle = 0
             self.FAN.duty_cycle = 0
-            print('Fermenter at the desired temperature')
+            print('Fermenter at the desired temperature. Current: ' + str(temp))
 
+def duty_cycles_percent(percent):
+    duty_cycles = int(simpleio.map_range(percent, 0, 100, 0, 65532))
+    return duty_cycles
         
 if __name__ == '__main__':
     time.sleep(0.25)
