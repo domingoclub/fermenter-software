@@ -21,7 +21,7 @@ temp_margin = 1
 timer_set = 0.0
 edit_mode = False
 fan_freq = 0
-fan_freq_max = 20
+fan_freq_max = 6
 current_screen = "temp_display"
 
 # Sensor
@@ -157,9 +157,9 @@ while True:
     if temp < temp_set - temp_margin:
         led.color = (30, 0, 0)
         HEAT.value = True
-        if fan_freq < fan_freq_max/10:
+        if fan_freq < fan_freq_max:
             FAN.value = True
-        elif fan_freq_max/10 <= fan_freq < fan_freq_max:
+        elif fan_freq_max <= fan_freq < fan_freq_max*5:
             FAN.value = False
         else:
             fan_freq = 0

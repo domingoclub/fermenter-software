@@ -63,9 +63,9 @@ class fermenter:
         self.screen.append(self.menu_right_area)
 
         # Outputs
-        self.FAN = pwmio.PWMOut(board.GP6, frequency=80)
+        # self.FAN = pwmio.PWMOut(board.GP6, frequency=80)
         # self.FAN.duty_cycle = 2 ** 15
-        # self.HEAT = pwmio.PWMOut(board.GP7)
+        self.HEAT = pwmio.PWMOut(board.GP7)
         # self.HEAT.duty_cycle = 2 ** 15
 
     def update_temp(self): 
@@ -77,8 +77,8 @@ class fermenter:
         temp_power = simpleio.map_range(temp_error, 0, 5, 0, 100)
         if temp < self.TEMP_MIN:
             # self.HEAT.duty_cycle = int(temp_power)
-            # self.HEAT.duty_cycle = duty_cycles_percent(50)
-            self.FAN.duty_cycle = duty_cycles_percent(temp_power)
+            self.HEAT.duty_cycle = duty_cycles_percent(100)
+            # self.FAN.duty_cycle = duty_cycles_percent(temp_power)
             # self.FAN.duty_cycle = int(temp_power / 3) if temp_power / 3 > 200 else 200
             print('Error: ' + str(temp_error) + ' — Temp: ' + str(temp) + ' — Power: ' + str(temp_power))
             # print('Fermenter heating up. Current: ' + str(temp))
