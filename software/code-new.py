@@ -10,6 +10,7 @@ from adafruit_display_text import label
 import terminalio
 import pwmio
 import simpleio
+import math
 
 class fermenter:
 
@@ -68,38 +69,100 @@ class fermenter:
         self.HEAT = pwmio.PWMOut(board.GP7)
         # self.HEAT.duty_cycle = 2 ** 15
 
-    def update_temp(self): 
-        self.temp = self.sensor.temperature
-        return self.temp
+        # Menu
+        self.screens = ["temp_display", "temp_set", "timer_set"]
+        self.screen_index = 0
+        self.edit_mode = False
+        self.display_screen(self.screen_index)
+
+    def encoder_handler(self):
+        if self.encoder_last_position is None or self.encoder_last_position != self.encoder.position:
+            if self.encoder.position > self.encoder_last_position:
+                self.edit_handler(-1) if self.edit_mode else self.menu_handler(-1)
+            else:
+                self.edit_handler(1) if self.edit_mode else self.menu_handler(1)
+        self.encoder_last_position = self.encoder.position
+
+    def button_handler(self):
+        if self.BTN.value is False and not self.btn_down:
+            self.switch_edit_mode()
+            self.btn_down = True
+        elif self.BTN.value is True and self.btn_down:
+            self.btn_down = False
+
+    def menu_handler(self, increment):
+        self.screen_index += increment
+        if self.screen_index > len(self.screens) - 1:
+            self.screen_index = 0
+        elif self.screen_index < 0:
+            self.screen_index = len(self.screens) - 1
+        self.display_screen(self.screen_index)
+
+    def switch_edit_mode(self):
+        if self.screens[self.screen_index] == "temp_set":
+            if self.edit_mode == False:
+                self.value_area.color=0x000000
+                self.value_area.background_color=0xFFFFFF
+                self.edit_mode = True
+            else:
+                self.value_area.color=0xFFFFFF
+                self.value_area.background_color=0x000000
+                self.edit_mode = False
+
+    def edit_handler(self, increment):
+        if self.screens[self.screen_index] == "temp_set":
+            self.TEMP_SET += increment
+            self.value_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
+
+    def display_screen(self, i):
+        if self.screens[i] == "temp_display":
+            self.label_area.text = "Temperature"
+            self.update_temp
+            self.value_area.text = "{} C".format(round_down(self.sensor.temperature, 1))
+        elif self.screens[i] == "temp_set":
+            self.label_area.text = "Set: Temperature"
+            self.value_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
+        elif self.screens[i] == "timer_set":
+            self.label_area.text = "Set: Timer"
+            self.value_area.text = "Soon"
+
+    def update_temp(self, temp):
+        if self.screens[self.screen_index] == "temp_display":
+            self.value_area.text = "{} C".format(round_down(temp, 1))
     
     def heating_system(self, temp):
         temp_error = abs(self.TEMP_SET - temp)
         temp_power = simpleio.map_range(temp_error, 0, 5, 0, 100)
         if temp < self.TEMP_MIN:
-            # self.HEAT.duty_cycle = int(temp_power)
-            self.HEAT.duty_cycle = duty_cycles_percent(100)
-            # self.FAN.duty_cycle = duty_cycles_percent(temp_power)
-            # self.FAN.duty_cycle = int(temp_power / 3) if temp_power / 3 > 200 else 200
-            print('Error: ' + str(temp_error) + ' — Temp: ' + str(temp) + ' — Power: ' + str(temp_power))
+            self.HEAT.duty_cycle = percent_to_duty_cycles(temp_power)
+            # self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
             # print('Fermenter heating up. Current: ' + str(temp))
         elif temp > self.TEMP_MAX:
-            self.FAN.duty_cycle = int(temp_power)
-            # self.HEAT.duty_cycle = 0
-            print('Fermenter cooling down. Current: ' + str(temp))
+            # self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
+            self.HEAT.duty_cycle = 0
+            # print('Fermenter cooling down. Current: ' + str(temp))
         else:
-            # self.HEAT.duty_cycle = 0
-            self.FAN.duty_cycle = 0
-            print('Fermenter at the desired temperature. Current: ' + str(temp))
+            self.HEAT.duty_cycle = 0
+            # self.FAN.duty_cycle = 0
+            # print('Fermenter at the desired temperature. Current: ' + str(temp))
+        self.update_temp(temp)
 
-def duty_cycles_percent(percent):
+
+def percent_to_duty_cycles(percent):
     duty_cycles = int(simpleio.map_range(percent, 0, 100, 0, 65532))
     return duty_cycles
+
+def round_down(n, decimals=0):
+    multiplier = 10 ** decimals
+    return math.floor(n * multiplier) / multiplier
         
 if __name__ == '__main__':
-    time.sleep(0.25)
+    
     fermenter = fermenter()
 
     while True:
-        
-        temp = fermenter.update_temp()
+        temp = fermenter.sensor.temperature
+        fermenter.encoder_handler()
+        fermenter.button_handler()
         fermenter.heating_system(temp)
+        # time.sleep(0.25)
