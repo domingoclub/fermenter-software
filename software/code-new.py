@@ -129,6 +129,7 @@ class fermenter:
                 self.edit_mode = False
                 if self.TIME_TIMER_HOURS > 0:
                     self.TIMER_ON = True
+                    fermenter.timer()
                 else:
                     self.TIMER_ON = False
                 self.goto("dashboard", "Set!")
@@ -151,16 +152,17 @@ class fermenter:
             self.value_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
         elif self.screens[i] == "timer_set":
             self.label_area.text = "Set: Timer"
-            self.value_area.text = "Soon"
+            self.value_area.text = "{} H".format(round_down(self.TIME_TIMER_HOURS, 1))
 
     def update_temp(self, temp):
         if self.screens[self.screen_index] == "dashboard":
             self.value_area.text = "{} C".format(round_down(temp, 1))
 
     def goto(self, screen, message):
+        self.screen_index = self.screens.index(screen)
         self.value_area.text = message
         time.sleep(1)
-        self.display_screen(self.screens.index(screen))
+        self.display_screen(self.screen_index)
     
     def heating_system(self, temp):
         temp_error = abs(self.TEMP_SET - temp)
@@ -189,6 +191,10 @@ class fermenter:
         time_now = time.time()
         time_active_sec = time_now - self.TIME_STARTUP
         time_active_hours = time_active_sec // 3600
+        if self.TIMER_ON:
+            pass
+            # TODO: TIMER
+
 
 
 def percent_to_duty_cycles(percent):
@@ -197,7 +203,9 @@ def percent_to_duty_cycles(percent):
 
 def round_down(n, decimals=0):
     multiplier = 10 ** decimals
-    return math.floor(n * multiplier) / multiplier
+    number = math.floor(n * multiplier) / multiplier
+    result = 0.0 if number < 0 else number
+    return result
         
 if __name__ == '__main__':
     
@@ -208,5 +216,4 @@ if __name__ == '__main__':
         fermenter.encoder_handler()
         fermenter.button_handler()
         fermenter.heating_system(temp)
-        fermenter.timer()
         # time.sleep(0.25)
