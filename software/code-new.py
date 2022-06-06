@@ -49,9 +49,9 @@ class fermenter:
         self.encoder_last_position = 0
 
         # Led
-        self.RED_LED = board.GP22
-        self.GREEN_LED = board.GP21
-        self.BLUE_LED = board.GP20
+        self.RED_LED = board.GP20
+        self.GREEN_LED = board.GP18
+        self.BLUE_LED = board.GP16
         self.LED = adafruit_rgbled.RGBLED(self.RED_LED, self.GREEN_LED, self.BLUE_LED, invert_pwm=True)
 
         # Display
@@ -82,10 +82,10 @@ class fermenter:
         self.screen.append(self.menu_right_area)
 
         # Outputs
-        # self.FAN = pwmio.PWMOut(board.GP6, frequency=80)
-        # self.FAN.duty_cycle = 2 ** 15
-        self.HEAT = pwmio.PWMOut(board.GP7)
-        # self.HEAT.duty_cycle = 2 ** 15
+        self.FAN = pwmio.PWMOut(board.GP6, frequency=80)
+        self.FAN.duty_cycle = 2 ** 15
+        self.HEAT = pwmio.PWMOut(board.GP8)
+        self.HEAT.duty_cycle = 2 ** 15
 
         # Menu
         self.screens = ["dashboard", "temp_set", "timer_set"]
@@ -136,7 +136,7 @@ class fermenter:
 
     def edit_handler(self, increment):
         if self.screens[self.screen_index] == "temp_set":
-            self.TEMP_SET += increment
+            self.update_temp_values(increment)
             self.value_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
         elif self.screens[self.screen_index] == "timer_set":
             self.TIME_TIMER_HOURS += increment
@@ -171,21 +171,26 @@ class fermenter:
             self.HEAT.duty_cycle = percent_to_duty_cycles(temp_power)
             self.LED.color = self.COLOR_RED
             self.STATUS = 1
-            # self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
-            # print('Fermenter heating up. Current: ' + str(temp))
+            self.FAN.duty_cycle = percent_to_duty_cycles(temp_power*0.6)
+            print('Fermenter heating up. Current: ' + str(temp))
         elif temp > self.TEMP_MAX:
             self.LED.color = self.COLOR_BLUE
             self.STATUS = -1
-            # self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
+            self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
             self.HEAT.duty_cycle = 0
-            # print('Fermenter cooling down. Current: ' + str(temp))
+            print('Fermenter cooling down. Current: ' + str(temp))
         else:
             self.LED.color = self.COLOR_GREEN
             self.HEAT.duty_cycle = 0
             self.STATUS = 0
-            # self.FAN.duty_cycle = 0
-            # print('Fermenter at the desired temperature. Current: ' + str(temp))
+            self.FAN.duty_cycle = 0
+            print('Fermenter at the desired temperature. Current: ' + str(temp))
         self.update_temp(temp)
+
+    def update_temp_values(self, increment):
+        self.TEMP_SET += increment
+        self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
+        self.TEMP_MIN = self.TEMP_SET - self.TEMP_MARGIN
 
     def timer(self):
         time_now = time.time()
