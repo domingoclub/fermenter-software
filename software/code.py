@@ -26,7 +26,7 @@ class fermenter:
         self.STATUS = 0
 
         # Settings
-        self.TEMP_SET = 30
+        self.TEMP_SET = 29
         self.TEMP_MARGIN = 1
         self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
         self.TEMP_MIN = self.TEMP_SET - self.TEMP_MARGIN
@@ -82,7 +82,7 @@ class fermenter:
         self.screen.append(self.menu_right_area)
 
         # Outputs
-        self.FAN = pwmio.PWMOut(board.GP6, frequency=80)
+        self.FAN = pwmio.PWMOut(board.GP6, frequency=20000)
         self.FAN.duty_cycle = 2 ** 15
         self.HEAT = pwmio.PWMOut(board.GP8)
         self.HEAT.duty_cycle = 2 ** 15
@@ -166,24 +166,24 @@ class fermenter:
     
     def heating_system(self, temp):
         temp_error = abs(self.TEMP_SET - temp)
-        temp_power = simpleio.map_range(temp_error, 0, 5, 0, 100)
+        temp_power = simpleio.map_range(temp_error, 0, 12, 0, 100)
         if temp < self.TEMP_MIN:
             self.HEAT.duty_cycle = percent_to_duty_cycles(temp_power)
             self.LED.color = self.COLOR_RED
             self.STATUS = 1
-            self.FAN.duty_cycle = percent_to_duty_cycles(temp_power*0.6)
+            self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
             print('Fermenter heating up. Current: ' + str(temp))
         elif temp > self.TEMP_MAX:
             self.LED.color = self.COLOR_BLUE
             self.STATUS = -1
-            self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
+            self.FAN.duty_cycle = percent_to_duty_cycles(temp_power*2)
             self.HEAT.duty_cycle = 0
             print('Fermenter cooling down. Current: ' + str(temp))
         else:
             self.LED.color = self.COLOR_GREEN
             self.HEAT.duty_cycle = 0
             self.STATUS = 0
-            self.FAN.duty_cycle = 0
+            self.FAN.duty_cycle = 9000
             print('Fermenter at the desired temperature. Current: ' + str(temp))
         self.update_temp(temp)
 
