@@ -17,27 +17,6 @@ class fermenter:
 
     def __init__(self):
 
-        # Time
-        self.TIME_STARTUP = time.time()
-        self.TIME_TIMER_HOURS = 0
-        self.TIMER_ON = False
-
-        # Heating System
-        self.STATUS = 0
-
-        # Settings
-        self.TEMP_SET = 30
-        self.TEMP_MARGIN = 1
-        self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
-        self.TEMP_MIN = self.TEMP_SET - self.TEMP_MARGIN
-        self.COLOR_RED = (20, 0, 0)
-        self.COLOR_GREEN = (0, 20, 0)
-        self.COLOR_BLUE = (0, 0, 20)
-
-        # Sensor
-        self.sensor_i2c = busio.I2C(board.GP13, board.GP12)
-        self.sensor = adafruit_mcp9808.MCP9808(self.sensor_i2c)
-
         # Button
         self.BTN = DigitalInOut(board.GP2)
         self.BTN.direction = Direction.INPUT
@@ -47,12 +26,6 @@ class fermenter:
         # Encoder
         self.encoder = rotaryio.IncrementalEncoder(board.GP4, board.GP3)
         self.encoder_last_position = 0
-
-        # Led
-        self.RED_LED = board.GP20
-        self.GREEN_LED = board.GP18
-        self.BLUE_LED = board.GP16
-        self.LED = adafruit_rgbled.RGBLED(self.RED_LED, self.GREEN_LED, self.BLUE_LED, invert_pwm=True)
 
         # Display
         displayio.release_displays()
@@ -72,35 +45,77 @@ class fermenter:
         self.screen.append(bg_sprite)
 
         # Text areas
-
+        self.title_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=5)
+        self.subtitle_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=5)
         self.label_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=5)
-        self.screen.append(self.label_area)
-
+        self.sublabel_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=20)
+        self.subsublabel_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=35)
         self.value_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=48, y=32)
-        self.screen.append(self.value_area)
-
-        self.confirm_area = label.Label(terminalio.FONT, text=""*2, color=0xFFFFFF, x=118, y=55)
-        self.screen.append(self.confirm_area)
-
+        self.subvalue_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=48, y=32)
         self.menu_left_area = label.Label(terminalio.FONT, text="", color=0xFFFFFF, x=5, y=55)
-        self.screen.append(self.menu_left_area)
-
         self.menu_right_area = label.Label(terminalio.FONT, text="", color=0xFFFFFF, x=123, y=55)
+        self.footer_area = label.Label(terminalio.FONT, text="", color=0xFFFFFF, x=5, y=55)
+        self.screen.append(self.title_area)
+        self.screen.append(self.subtitle_area)
+        self.screen.append(self.label_area)
+        self.screen.append(self.sublabel_area)
+        self.screen.append(self.subsublabel_area)
+        self.screen.append(self.value_area)
+        self.screen.append(self.subvalue_area)
+        self.screen.append(self.menu_left_area)
         self.screen.append(self.menu_right_area)
+        self.screen.append(self.footer_area)
 
-        # Outputs
-        self.FAN = pwmio.PWMOut(board.GP6, frequency=80)
-        self.FAN.duty_cycle = 2 ** 15
-        self.HEAT = pwmio.PWMOut(board.GP8)
-        self.HEAT.duty_cycle = 2 ** 15
 
         # Screens
         self.screens_intro = ["header", "define_temp", "define_time"]
         self.screens_menu = ["dashboard", "define_temp", "define_time", "header"]
         self.screen_index = 0
         self.menu_on = False
-        self.edit_mode = False
-        self.display_screen(self.menu_on, self.screen_index)
+        self.edit_mode = True
+        # First screens
+        self.display_screen(self.menu_on, 0)
+        time.sleep(2)
+        self.display_screen(self.menu_on, 1)
+        time.sleep(2)
+        self.display_screen(self.menu_on, 2)
+
+    def display_screen(self, menu, i):
+        # intro
+        if not menu:
+            self.menu_left_area.text = ""
+            self.menu_right_area.text = ""
+            if self.screens_intro[i] == "header":
+                self.label_area.text = "Hello,"
+                self.sublabel_area.text = "hola"
+                self.subsublabel_area.text = "salut!"
+                self.footer_area.text = "domingoclub.com"
+            elif self.screens_intro[i] == "define_temp":
+                self.label_area.text = "What is the ideal"
+                self.sublabel_area.text = "temperature for your"
+                self.subsublabel_area.text = "fermentation?"
+                self.footer_area.text =""
+            elif self.screens_intro[i] == "define_time":
+                self.label_area.text = "For how long"
+                self.sublabel_area.text = "would you like"
+                self.subsublabel_area.text = "to ferment?"
+                self.footer_area.text =""
+        # menu
+        if menu:
+            self.menu_left_area.text = "<"
+            self.menu_right_area.text = ">"
+            if self.screens_menu[i] == "dashboard":
+                self.label_area.text = "Fermenter"
+                self.update_temp
+                self.value_area.text = "{} C".format(round_down(self.sensor.temperature, 1))
+            elif self.screens_menu[i] == "define_temp":
+                self.label_area.text = "Set: Temperature"
+                self.value_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
+            elif self.screens_menu[i] == "define_time":
+                self.label_area.text = "Set: Timer"
+                self.value_area.text = "{} H".format(round_down(self.TIME_TIMER_HOURS, 1))
+            elif self.screens_menu[i] == "header":
+                self.label_area.text = "header"
 
     def encoder_handler(self):
         if self.encoder_last_position is None or self.encoder_last_position != self.encoder.position:
@@ -116,7 +131,7 @@ class fermenter:
             self.btn_down = True
         elif self.BTN.value is True and self.btn_down:
             self.btn_down = False
-
+    
     def menu_handler(self, increment):
         self.screen_index += int(increment * 2)
         if self.menu_on:
@@ -138,13 +153,7 @@ class fermenter:
                 self.value_area.color=0xFFFFFF
                 self.value_area.background_color=0x000000
                 self.edit_mode = False
-                if self.TIME_TIMER_HOURS > 0:
-                    self.TIMER_ON = True
-                    fermenter.timer()
-                else:
-                    self.TIMER_ON = False
-                self.goto("dashboard", "Set!")
-
+        
     def edit_handler(self, increment):
         if self.screens_menu[self.screen_index] == "define_temp":
             self.update_temp_values(increment)
@@ -153,95 +162,17 @@ class fermenter:
             self.TIME_TIMER_HOURS += increment
             self.value_area.text = "{} H".format(round_down(self.TIME_TIMER_HOURS, 1))
 
-    def display_screen(self, menu, i):
-        if not menu:
-            # intro
-            self.menu_left_area.text = ""
-            self.menu_right_area.text = ""
-            self.confirm_area.text = "Ok"
-            if self.screens_intro[i] == "header":
-                self.label_area.text = "intro header"
-            elif self.screens_intro[i] == "define_temp":
-                self.label_area.text = "intro define_temp"
-            elif self.screens_intro[i] == "define_time":
-                self.label_area.text = "intro define_time"
-        else:
-            # menu
-            self.menu_left_area.text = "<"
-            self.menu_right_area.text = ">"
-            if self.screens_menu[i] == "dashboard":
-                self.label_area.text = "Fermenter"
-                self.update_temp
-                self.value_area.text = "{} C".format(round_down(self.sensor.temperature, 1))
-            elif self.screens_menu[i] == "define_temp":
-                self.label_area.text = "Set: Temperature"
-                self.value_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
-            elif self.screens_menu[i] == "define_time":
-                self.label_area.text = "Set: Timer"
-                self.value_area.text = "{} H".format(round_down(self.TIME_TIMER_HOURS, 1))
-            elif self.screens_menu[i] == "header":
-                self.label_area.text = "header"
-
-    def update_temp(self, temp):
-        if self.screens_menu[self.screen_index] == "dashboard":
-            self.value_area.text = "{} C".format(round_down(temp, 1))
-
     def goto(self, screen, message):
         self.screen_index = self.screens_menu.index(screen)
         self.value_area.text = message
         time.sleep(1)
         self.display_screen(self.menu_on, self.screen_index)
-    
-    def heating_system(self, temp):
-        temp_error = abs(self.TEMP_SET - temp)
-        temp_power = simpleio.map_range(temp_error, 0, 12, 0, 100)
-        if temp < self.TEMP_MIN:
-            self.HEAT.duty_cycle = percent_to_duty_cycles(temp_power)
-            self.LED.color = self.COLOR_RED
-            self.STATUS = 1
-            self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
-        elif temp > self.TEMP_MAX:
-            self.LED.color = self.COLOR_BLUE
-            self.STATUS = -1
-            self.FAN.duty_cycle = percent_to_duty_cycles(temp_power*2)
-            self.HEAT.duty_cycle = 0
-        else:
-            self.LED.color = self.COLOR_GREEN
-            self.HEAT.duty_cycle = 0
-            self.STATUS = 0
-            self.FAN.duty_cycle = 9000
-        self.update_temp(temp)
 
-    def update_temp_values(self, increment):
-        self.TEMP_SET += increment
-        self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
-        self.TEMP_MIN = self.TEMP_SET - self.TEMP_MARGIN
-
-    def timer(self):
-        time_now = time.time()
-        time_active_sec = time_now - self.TIME_STARTUP
-        time_active_hours = time_active_sec // 3600
-        if self.TIMER_ON:
-            pass
-            # TODO: TIMER
-
-def percent_to_duty_cycles(percent):
-    duty_cycles = int(simpleio.map_range(percent, 0, 100, 0, 65532))
-    return duty_cycles
-
-def round_down(n, decimals=0):
-    multiplier = 10 ** decimals
-    number = math.floor(n * multiplier) / multiplier
-    result = 0.0 if number < 0 else number
-    return result
-        
 if __name__ == '__main__':
     
     fermenter = fermenter()
 
     while True:
-        temp = fermenter.sensor.temperature
         fermenter.encoder_handler()
         fermenter.button_handler()
-        fermenter.heating_system(temp)
         # time.sleep(0.25)
