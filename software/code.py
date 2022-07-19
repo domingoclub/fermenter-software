@@ -13,9 +13,27 @@ import simpleio
 import math
 import adafruit_rgbled
 
+font = terminalio.FONT
+
 class fermenter:
 
     def __init__(self):
+
+        # Temp
+        self.TEMP_SET = 30
+        self.TEMP_MARGIN = 1
+        self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
+        self.TEMP_MIN = self.TEMP_SET - self.TEMP_MARGIN
+
+        # Colors
+        self.COLOR_RED = (20, 0, 0)
+        self.COLOR_GREEN = (0, 20, 0)
+        self.COLOR_BLUE = (0, 0, 20)
+
+        # Time
+        self.TIME_TIMER_HOURS = 38
+        self.TIME_STARTUP = time.time()
+        self.TIMER_ON = False
 
         # Button
         self.BTN = DigitalInOut(board.GP2)
@@ -45,16 +63,16 @@ class fermenter:
         self.screen.append(bg_sprite)
 
         # Text areas
-        self.title_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=5)
-        self.subtitle_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=5)
-        self.label_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=5)
-        self.sublabel_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=20)
-        self.subsublabel_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=5, y=35)
-        self.value_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=48, y=32)
-        self.subvalue_area = label.Label(terminalio.FONT, text=" "*20, color=0xFFFFFF, x=48, y=32)
-        self.menu_left_area = label.Label(terminalio.FONT, text="", color=0xFFFFFF, x=5, y=55)
-        self.menu_right_area = label.Label(terminalio.FONT, text="", color=0xFFFFFF, x=123, y=55)
-        self.footer_area = label.Label(terminalio.FONT, text="", color=0xFFFFFF, x=5, y=55)
+        self.title_area = label.Label(font, text=" "*20, color=0xFFFFFF, x=5, y=5)
+        self.subtitle_area = label.Label(font, text=" "*20, color=0xFFFFFF, x=5, y=5)
+        self.label_area = label.Label(font, text=" "*20, color=0xFFFFFF, x=5, y=5)
+        self.sublabel_area = label.Label(font, text=" "*20, color=0xFFFFFF, x=5, y=20)
+        self.subsublabel_area = label.Label(font, text=" "*20, color=0xFFFFFF, x=5, y=35)
+        self.value_area = label.Label(font, text=" "*20, color=0xFFFFFF, x=48, y=32)
+        self.subvalue_area = label.Label(font, text=" "*20, color=0xFFFFFF, x=48, y=32)
+        self.menu_left_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=55)
+        self.menu_right_area = label.Label(font, text="", color=0xFFFFFF, x=123, y=55)
+        self.footer_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=55)
         self.screen.append(self.title_area)
         self.screen.append(self.subtitle_area)
         self.screen.append(self.label_area)
@@ -68,17 +86,16 @@ class fermenter:
 
 
         # Screens
-        self.screens_intro = ["header", "define_temp", "define_time"]
+        self.screens_intro = ["header", "define_temp", "define_time", "all_set"]
         self.screens_menu = ["dashboard", "define_temp", "define_time", "header"]
         self.screen_index = 0
         self.menu_on = False
         self.edit_mode = True
+
         # First screens
         self.display_screen(self.menu_on, 0)
         time.sleep(2)
         self.display_screen(self.menu_on, 1)
-        time.sleep(2)
-        self.display_screen(self.menu_on, 2)
 
     def display_screen(self, menu, i):
         # intro
@@ -86,20 +103,28 @@ class fermenter:
             self.menu_left_area.text = ""
             self.menu_right_area.text = ""
             if self.screens_intro[i] == "header":
-                self.label_area.text = "Hello,"
-                self.sublabel_area.text = "hola"
-                self.subsublabel_area.text = "salut!"
-                self.footer_area.text = "domingoclub.com"
+                self.label_area.text = "Hey! Let's ferment."
+                self.sublabel_area.text = ""
+                self.subsublabel_area.text = ""
+                self.footer_area.text = ""
             elif self.screens_intro[i] == "define_temp":
-                self.label_area.text = "What is the ideal"
+                self.label_area.text = "What's the ideal"
                 self.sublabel_area.text = "temperature for your"
                 self.subsublabel_area.text = "fermentation?"
-                self.footer_area.text =""
+                self.footer_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
+                self.menu_right_area.text = ">"
             elif self.screens_intro[i] == "define_time":
-                self.label_area.text = "For how long"
-                self.sublabel_area.text = "would you like"
-                self.subsublabel_area.text = "to ferment?"
-                self.footer_area.text =""
+                self.label_area.text = "For how long do you"
+                self.sublabel_area.text = "want to ferment?"
+                self.subsublabel_area.text = ""
+                self.footer_area.text = "{} hours".format(self.TIME_TIMER_HOURS)
+                self.menu_right_area.text = ">"
+            elif self.screens_intro[i] == "all_set":
+                self.label_area.text = "It's all set."
+                self.sublabel_area.text = "Remember to come"
+                self.subsublabel_area.text = "and see sometimes."
+                self.footer_area.text = ""
+                self.menu_right_area.text = ""
         # menu
         if menu:
             self.menu_left_area.text = "<"
@@ -167,6 +192,12 @@ class fermenter:
         self.value_area.text = message
         time.sleep(1)
         self.display_screen(self.menu_on, self.screen_index)
+
+def round_down(n, decimals=0):
+    multiplier = 10 ** decimals
+    number = math.floor(n * multiplier) / multiplier
+    result = 0.0 if number < 0 else number
+    return result
 
 if __name__ == '__main__':
     
