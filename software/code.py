@@ -148,8 +148,8 @@ class fermenter:
                 self.menu_right_area.text = ">"
             elif self.screens_intro[i] == "all_set":
                 self.content1_area.text = "It's all set."
-                self.content2_area.text = "Remember to come"
-                self.content3_area.text = "and see sometimes."
+                self.content2_area.text = "Remember to check me"
+                self.content3_area.text = "every now and then."
         # menu
         if menu:
             self.menu_left_area.text = "<"
@@ -247,8 +247,8 @@ class fermenter:
 
     def update_values(self):
         if self.screens_menu[self.screen_index] == "dashboard":
-            self.content3_extra_area.text = "{} C inside".format(round_down(self.sensor.temperature, 1))
-            self.content4_area.text = "{} hours left".format(int(self.TIME_TIMER_HOURS))
+            self.content3_extra_area.text = "{} C inside,".format(round_down(self.sensor.temperature, 1))
+            self.content4_area.text = "{} hours left.".format(int(self.TIME_TIMER_HOURS))
 
     def update_status_sentence(self):
         if self.screens_menu[self.screen_index] == "dashboard":
