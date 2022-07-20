@@ -20,8 +20,8 @@ class fermenter:
     def __init__(self):
 
         # General
-        self.DELAY_SCREENS = 2
-        self.DELAY_ACTIONS = 0.5
+        self.DELAY_SCREENS = 3
+        self.DELAY_ACTIONS = 1
         self.STATUS_SENTENCE = ""
         self.STATUS_SUBSENTENCE = ""
 
@@ -93,7 +93,7 @@ class fermenter:
         self.content1_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=3)
         self.content2_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=18)
         self.content3_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=34)
-        self.content3_extra_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=49)
+        self.content3_extra_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=41)
         self.content4_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=56)
         self.menu_left_area = label.Label(font, text="", color=0xFFFFFF, x=114, y=56)
         self.menu_right_area = label.Label(font, text="", color=0xFFFFFF, x=125, y=56)
@@ -247,8 +247,8 @@ class fermenter:
 
     def update_values(self):
         if self.screens_menu[self.screen_index] == "dashboard":
-            self.content3_area.text = "it's {} C inside,".format(round_down(self.sensor.temperature, 1))
-            self.content3_extra_area.text = "{} hours left.".format(int(self.TIME_TIMER_HOURS))
+            self.content3_extra_area.text = "{} C inside".format(round_down(self.sensor.temperature, 1))
+            self.content4_area.text = "{} hours left".format(int(self.TIME_TIMER_HOURS))
 
     def update_status_sentence(self):
         if self.screens_menu[self.screen_index] == "dashboard":
