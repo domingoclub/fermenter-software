@@ -98,9 +98,7 @@ class fermenter:
         self.content3_extra_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=41)
         self.content4_area = label.Label(font, text="", color=0xFFFFFF, x=5, y=56)
         self.menu_left_area = label.Label(font, text="", color=0xFFFFFF, x=114, y=56)
-        self.menu_right_area = label.Label(font, text="", color=0xFFFFFF, x=125, y=56)
-        self.menu_top_area = label.Label(font, text="", color=0xFFFFFF, x=125, y=56)
-        self.menu_bottom_area = label.Label(font, text="", color=0xFFFFFF, x=125, y=56)
+        self.menu_right_area = label.Label(font, text="", color=0xFFFFFF, x=123, y=56)
         self.screen.append(self.content1_area)
         self.screen.append(self.content2_area)
         self.screen.append(self.content3_area)
@@ -124,13 +122,14 @@ class fermenter:
 
     def display_screen(self, menu, i):
         self.content1_area.text = self.content2_area.text = self.content3_area.text = self.content3_extra_area.text = self.content4_area.text = ""
-        self.menu_left_area.text = self.menu_right_area.text = self.menu_top_area.text = self.menu_bottom_area.text = ""
+        self.menu_left_area.text = self.menu_right_area.text = ""
         # intro
         if not menu:
             self.menu_left_area.text = ""
             self.menu_right_area.text = ""
             if self.screens_intro[i] == "header":
-                self.content1_area.text = "⚙ Hey! Let's ferment."
+                self.content1_area.text = "Hey! Let's ferment."
+                self.content4_area.text = "⚙ ⚙ ⚙"
             elif self.screens_intro[i] == "define_temp":
                 self.content1_area.text = " What's the ideal"
                 self.content2_area.text = "temperature for your"
@@ -138,32 +137,35 @@ class fermenter:
                 self.content4_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
                 self.content4_area.color=0x000000
                 self.content4_area.background_color=0xFFFFFF
-                self.menu_right_area.text = ">"
+                self.menu_left_area.text = "↓"
+                self.menu_right_area.text = "↑"
             elif self.screens_intro[i] == "define_time":
                 self.content1_area.text = " For how long do"
                 self.content2_area.text = "you want to ferment?"
                 self.content4_area.text = "{} hours".format(int(self.TIME_TIMER_HOURS))
                 self.content4_area.color=0x000000
                 self.content4_area.background_color=0xFFFFFF
-                self.menu_right_area.text = ">"
+                self.menu_left_area.text = "↓"
+                self.menu_right_area.text = "↑"
             elif self.screens_intro[i] == "all_set":
-                self.content1_area.text = "☺ It's all set."
+                self.content1_area.text = "It's all set."
                 self.content2_area.text = "Remember to check me"
                 self.content3_area.text = "every now and then."
+                self.content4_area.text = "☺"
         # menu
         if menu:
-            self.menu_left_area.text = "<"
-            self.menu_right_area.text = ">"
+            self.menu_left_area.text = ""
+            self.menu_right_area.text = "→"
             self.content4_area.color=0xFFFFFF
             self.content4_area.background_color=0x000000
             if self.screens_menu[i] == "dashboard":
                 self.update_status_sentence()
                 self.update_values()
             elif self.screens_menu[i] == "define_temp":
-                self.content1_area.text = "Set:  Temperature"
+                self.content1_area.text = " Set: Temperature"
                 self.content4_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
             elif self.screens_menu[i] == "define_time":
-                self.content1_area.text = "Set:  Timer"
+                self.content1_area.text = " Set: Timer"
                 self.content4_area.text = "{} hours".format(int(self.TIME_TIMER_HOURS))
             elif self.screens_menu[i] == "footer":
                 self.content1_area.text = "Domingo Fermenter"
@@ -213,6 +215,8 @@ class fermenter:
                 if self.edit_mode == False:
                     self.content4_area.color=0x000000
                     self.content4_area.background_color=0xFFFFFF
+                    self.menu_left_area.text = "↓"
+                    self.menu_right_area.text = "↑"
                     self.edit_mode = True
                 else:
                     self.content4_area.color=0xFFFFFF
