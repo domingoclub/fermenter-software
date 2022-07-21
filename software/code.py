@@ -40,7 +40,7 @@ class fermenter:
         self.COLOR_WHITE = (100, 100, 100)
 
         # Time
-        self.TIME_TIMER_HOURS = 0.003
+        self.TIME_TIMER_HOURS = 36
         self.TIME_STARTUP = time.time()
 
         # Heating System
@@ -227,20 +227,16 @@ class fermenter:
                     self.goto("dashboard", "Set!")
         
     def edit_handler(self, increment):
-        if self.menu_on:
-            if self.screens_menu[self.screen_index] == "define_temp":
-                self.update_temp_values(increment)
-                self.content4_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
-            elif self.screens_menu[self.screen_index] == "define_time":
-                self.TIME_TIMER_HOURS += increment * 2
-                self.content4_area.text = "{} hours".format(int(self.TIME_TIMER_HOURS))
+        if not self.menu_on:
+            screen = self.screens_intro[self.screen_index]
         else:
-            if self.screens_intro[self.screen_index] == "define_temp":
-                self.update_temp_values(increment)
-                self.content4_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
-            elif self.screens_intro[self.screen_index] == "define_time":
-                self.TIME_TIMER_HOURS += increment * 2
-                self.content4_area.text = "{} hours".format(int(self.TIME_TIMER_HOURS))
+            screen = self.screens_menu[self.screen_index]
+        if screen == "define_temp":
+            self.update_temp_values(increment)
+            self.content4_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
+        elif screen == "define_time":
+            self.TIME_TIMER_HOURS += increment * 2
+            self.content4_area.text = "{} hours".format(int(self.TIME_TIMER_HOURS))
 
     def update_temp_values(self, increment):
         self.TEMP_SET += increment
@@ -317,7 +313,6 @@ class fermenter:
     def timer(self, timer):
         time_now = time.time()
         time_active_sec = time_now - self.TIME_STARTUP
-        print("Time left: " + str((self.TIME_TIMER_HOURS * 3600) - time_active_sec))
         if time_active_sec >= (self.TIME_TIMER_HOURS * 3600):
             self.STATUS = False
         else:
@@ -342,7 +337,7 @@ if __name__ == '__main__':
         timer = fermenter.TIME_TIMER_HOURS
         fermenter.encoder_handler()
         fermenter.button_handler()
-        fermenter.timer(timer)
         if fermenter.menu_on:
+            fermenter.timer(timer)
             fermenter.heating_system(temp)
         # time.sleep(0.25)
