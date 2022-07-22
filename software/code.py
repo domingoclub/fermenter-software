@@ -41,7 +41,7 @@ class fermenter:
 
         # Time
         self.TIME_TIMER_HOURS = 36
-        self.TIME_THRESHOLD_DAYS = 73
+        self.TIME_THRESHOLD_DAYS = 72
         self.TIME_STARTUP = time.time()
         self.TIME_LEFT = self.TIME_TIMER_HOURS
 
@@ -247,10 +247,10 @@ class fermenter:
         elif screen == "define_time":
             if self.TIME_TIMER_HOURS  < 0:
                 self.TIME_TIMER_HOURS = 0
-            elif self.TIME_TIMER_HOURS >= 0 and self.TIME_TIMER_HOURS < self.TIME_THRESHOLD_DAYS:
-                self.TIME_TIMER_HOURS += increment * 2
-            else:
+            elif self.TIME_TIMER_HOURS > self.TIME_THRESHOLD_DAYS:
                 self.TIME_TIMER_HOURS += increment * 48
+            else:
+                self.TIME_TIMER_HOURS += increment * 2
             self.content4_area.text = timer_unit(int(self.TIME_TIMER_HOURS))
 
     def update_temp_values(self, increment):
