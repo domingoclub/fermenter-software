@@ -41,7 +41,9 @@ class fermenter:
 
         # Time
         self.TIME_TIMER_HOURS = 36
+        self.TIME_THRESHOLD_DAYS = 73
         self.TIME_STARTUP = time.time()
+        self.TIME_LEFT = self.TIME_TIMER_HOURS
 
         # Heating System
         self.STATUS = True
@@ -142,7 +144,7 @@ class fermenter:
             elif self.screens_intro[i] == "define_time":
                 self.content1_area.text = " For how long do"
                 self.content2_area.text = "you want to ferment?"
-                self.content4_area.text = "{} hours".format(int(self.TIME_TIMER_HOURS))
+                self.content4_area.text = timer_unit(int(self.TIME_TIMER_HOURS))
                 self.content4_area.color=0x000000
                 self.content4_area.background_color=0xFFFFFF
                 self.menu_left_area.text = "↓"
@@ -166,7 +168,7 @@ class fermenter:
                 self.content4_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
             elif self.screens_menu[i] == "define_time":
                 self.content1_area.text = " Set: Timer"
-                self.content4_area.text = "{} hours".format(int(self.TIME_TIMER_HOURS))
+                self.content4_area.text = timer_unit(int(self.TIME_TIMER_HOURS))
             elif self.screens_menu[i] == "footer":
                 self.content1_area.text = "Domingo Fermenter"
                 self.content2_area.text = "software v0.9"
@@ -225,6 +227,14 @@ class fermenter:
                     if screen == "define_time":
                         self.TIME_STARTUP = time.time()
                     self.goto("dashboard", "Set!")
+            elif screen == "dashboard" or screen == "footer":
+                self.content1_area.text = "Turn the knob to "
+                self.content2_area.text = "change the settings."
+                self.content3_area.text = ""
+                self.content3_extra_area.text = ""
+                self.content4_area.text = ""
+                time.sleep(self.DELAY_ACTIONS)
+                self.goto(screen, "")
         
     def edit_handler(self, increment):
         if not self.menu_on:
@@ -235,8 +245,13 @@ class fermenter:
             self.update_temp_values(increment)
             self.content4_area.text = "{} C".format(round_down(self.TEMP_SET, 1))
         elif screen == "define_time":
-            self.TIME_TIMER_HOURS += increment * 2
-            self.content4_area.text = "{} hours".format(int(self.TIME_TIMER_HOURS))
+            if self.TIME_TIMER_HOURS  < 0:
+                self.TIME_TIMER_HOURS = 0
+            elif self.TIME_TIMER_HOURS >= 0 and self.TIME_TIMER_HOURS < self.TIME_THRESHOLD_DAYS:
+                self.TIME_TIMER_HOURS += increment * 2
+            else:
+                self.TIME_TIMER_HOURS += increment * 48
+            self.content4_area.text = timer_unit(int(self.TIME_TIMER_HOURS))
 
     def update_temp_values(self, increment):
         self.TEMP_SET += increment
@@ -247,7 +262,7 @@ class fermenter:
         if self.screens_menu[self.screen_index] == "dashboard":
             if self.STATUS:
                 self.content3_extra_area.text = " {} C inside".format(round_down(self.sensor.temperature, 1))
-                self.content4_area.text = " {} hours left".format(int(self.TIME_TIMER_HOURS))
+                self.content4_area.text = " {} left".format(timer_unit(int(self.TIME_LEFT // 3600) + 1))
             else:
                 self.content3_area.text = "Observe, sense."
                 self.content3_extra_area.text = ""
@@ -312,11 +327,13 @@ class fermenter:
 
     def timer(self, timer):
         time_now = time.time()
-        time_active_sec = time_now - self.TIME_STARTUP
-        if time_active_sec >= (self.TIME_TIMER_HOURS * 3600):
-            self.STATUS = False
-        else:
+        timer_sec = self.TIME_TIMER_HOURS * 3600
+        time_since_startup = time_now - self.TIME_STARTUP
+        self.TIME_LEFT = timer_sec - time_since_startup
+        if self.TIME_LEFT > 1:
             self.STATUS = True
+        else:
+            self.STATUS = False
 
 def percent_to_duty_cycles(percent):
     duty_cycles = int(simpleio.map_range(percent, 0, 100, 0, 65532))
@@ -328,6 +345,18 @@ def round_down(n, decimals=0):
     result = 0.0 if number < 0 else number
     return result
 
+def timer_unit(hour):
+    time_unit = ""
+    if hour <= 0:
+        time_unit = "0 hour"
+    elif hour == 1:
+        time_unit = "1 hour"
+    elif hour > 1 and hour < fermenter.TIME_THRESHOLD_DAYS:
+        time_unit = str(int(hour)) + " hours"
+    elif hour >= fermenter.TIME_THRESHOLD_DAYS:
+        time_unit = str(int(hour // 24)) + " days"
+    return time_unit
+
 if __name__ == '__main__':
     
     fermenter = fermenter()
@@ -337,7 +366,7 @@ if __name__ == '__main__':
         timer = fermenter.TIME_TIMER_HOURS
         fermenter.encoder_handler()
         fermenter.button_handler()
+        fermenter.timer(timer)
         if fermenter.menu_on:
-            fermenter.timer(timer)
             fermenter.heating_system(temp)
         # time.sleep(0.25)
