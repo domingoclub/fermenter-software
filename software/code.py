@@ -292,10 +292,10 @@ class fermenter:
 
     def heating_system(self, temp):
         temp_error = abs(self.TEMP_SET - temp)
-        temp_power = simpleio.map_range(temp_error, 0, 12, 0, 100)
+        temp_power = simpleio.map_range(temp_error, 0, 6, 0, 100)
         if self.STATUS:
             if temp < self.TEMP_MIN:
-                self.HEAT.duty_cycle = percent_to_duty_cycles(temp_power)
+                self.HEAT.duty_cycle = percent_to_duty_cycles(temp_power*2)
                 self.LED.color = self.COLOR_RED
                 self.STATUS_SENTENCE = "Heating up to the"
                 self.STATUS_SUBSENTENCE = "good temperature."
