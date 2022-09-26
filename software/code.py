@@ -69,7 +69,7 @@ class fermenter:
         self.sensor = adafruit_mcp9808.MCP9808(self.sensor_i2c)
 
         # Fan
-        self.FAN = pwmio.PWMOut(board.GP6, frequency=20000)
+        self.FAN = pwmio.PWMOut(board.GP6, frequency=25000)
         self.FAN.duty_cycle = 0
 
         # Heating pad
@@ -292,14 +292,14 @@ class fermenter:
 
     def heating_system(self, temp):
         temp_error = abs(self.TEMP_SET - temp)
-        temp_power = simpleio.map_range(temp_error, 0, 12, 0, 100)
+        temp_power = simpleio.map_range(temp_error, 0, 10, 0, 100)
         if self.STATUS:
             if temp < self.TEMP_MIN:
                 self.HEAT.duty_cycle = percent_to_duty_cycles(temp_power*2)
                 self.LED.color = self.COLOR_RED
                 self.STATUS_SENTENCE = "Heating up to the"
                 self.STATUS_SUBSENTENCE = "good temperature."
-                self.FAN.duty_cycle = percent_to_duty_cycles(temp_power/2)
+                self.FAN.duty_cycle = percent_to_duty_cycles(temp_power/3)
             elif temp > self.TEMP_MAX:
                 self.LED.color = self.COLOR_BLUE
                 self.STATUS_SENTENCE = "Cooling down to"
