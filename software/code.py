@@ -70,11 +70,11 @@ class fermenter:
 
         # Fan
         self.FAN = pwmio.PWMOut(board.GP6, frequency=20000)
-        self.FAN.duty_cycle = 2 ** 15
+        self.FAN.duty_cycle = 0
 
         # Heating pad
         self.HEAT = pwmio.PWMOut(board.GP8)
-        self.HEAT.duty_cycle = 2 ** 15
+        self.HEAT.duty_cycle = 0
 
         # Display
         displayio.release_displays()
@@ -299,7 +299,7 @@ class fermenter:
                 self.LED.color = self.COLOR_RED
                 self.STATUS_SENTENCE = "Heating up to the"
                 self.STATUS_SUBSENTENCE = "good temperature."
-                self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
+                self.FAN.duty_cycle = percent_to_duty_cycles(temp_power/2)
             elif temp > self.TEMP_MAX:
                 self.LED.color = self.COLOR_BLUE
                 self.STATUS_SENTENCE = "Cooling down to"
@@ -314,7 +314,7 @@ class fermenter:
                 self.STATUS_SENTENCE = "Good temperature."
                 self.STATUS_SUBSENTENCE = "It feels great."
                 self.HEAT.duty_cycle = 0
-                self.FAN.duty_cycle = 9000
+                self.FAN.duty_cycle = 0
         else:
             self.LED.color = self.COLOR_WHITE
             self.STATUS_SENTENCE = " Timer expired."
