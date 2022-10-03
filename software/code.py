@@ -30,7 +30,7 @@ class fermenter:
         self.TEMP_SET = 30
         self.TEMP_MARGIN = 1
         self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
-        self.TEMP_MIN = self.TEMP_SET - self.TEMP_MARGIN
+        self.TEMP_MIN = self.TEMP_SET
 
         # Colors
         self.COLOR_RED = (20, 0, 0)
