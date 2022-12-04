@@ -40,7 +40,7 @@ class fermenter:
         self.COLOR_WHITE = (100, 100, 100)
 
         # Time
-        self.TIME_TIMER_HOURS = 36
+        self.TIME_TIMER_HOURS = 48
         self.TIME_THRESHOLD_DAYS = 72
         self.TIME_STARTUP = time.time()
         self.TIME_LEFT = self.TIME_TIMER_HOURS
@@ -299,7 +299,7 @@ class fermenter:
                 self.LED.color = self.COLOR_RED
                 self.STATUS_SENTENCE = "Heating up to the"
                 self.STATUS_SUBSENTENCE = "good temperature."
-                self.FAN.duty_cycle = percent_to_duty_cycles(temp_power/6)
+                self.FAN.duty_cycle = 0
             elif temp > self.TEMP_MAX:
                 self.LED.color = self.COLOR_BLUE
                 self.STATUS_SENTENCE = "Cooling down to"
