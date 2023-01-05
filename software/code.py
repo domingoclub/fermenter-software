@@ -20,6 +20,8 @@ class fermenter:
 
     def __init__(self):
 
+        self.SOFTWARE_VERSION = "software v0.9.3"
+
         # General
         self.DELAY_SCREENS = 3
         self.DELAY_ACTIONS = 1
@@ -171,7 +173,7 @@ class fermenter:
                 self.content4_area.text = timer_unit(int(self.TIME_TIMER_HOURS))
             elif self.screens_menu[i] == "footer":
                 self.content1_area.text = "Domingo Fermenter"
-                self.content2_area.text = "software v0.9.1"
+                self.content2_area.text = self.SOFTWARE_VERSION
                 self.content3_area.text = "domingoclub.com"
                 self.content4_area.text = "⚙ ⚙ ⚙"
 
