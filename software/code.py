@@ -30,9 +30,9 @@ class fermenter:
 
         # Temp
         self.TEMP_SET = 30
-        self.TEMP_MARGIN = 1
+        self.TEMP_MARGIN = 0.5
         self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
-        self.TEMP_MIN = self.TEMP_SET
+
 
         # Colors
         self.COLOR_RED = (20, 0, 0)
@@ -258,7 +258,6 @@ class fermenter:
     def update_temp_values(self, increment):
         self.TEMP_SET += increment
         self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
-        self.TEMP_MIN = self.TEMP_SET - self.TEMP_MARGIN
 
     def update_values(self):
         if self.screens_menu[self.screen_index] == "dashboard":
@@ -296,7 +295,7 @@ class fermenter:
         temp_error = abs(self.TEMP_SET - temp)
         temp_power = simpleio.map_range(temp_error, 0, 8, 0, 100)
         if self.STATUS:
-            if temp < self.TEMP_MIN:
+            if temp <= self.TEMP_SET:
                 self.HEAT.duty_cycle = percent_to_duty_cycles(100)
                 self.LED.color = self.COLOR_RED
                 self.STATUS_SENTENCE = "Heating up to the"
