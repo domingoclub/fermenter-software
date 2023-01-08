@@ -20,7 +20,7 @@ class fermenter:
 
     def __init__(self):
 
-        self.SOFTWARE_VERSION = "software v0.9.3"
+        self.SOFTWARE_VERSION = "software v0.9.4"
 
         # General
         self.DELAY_SCREENS = 3
