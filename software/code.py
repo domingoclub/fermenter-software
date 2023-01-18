@@ -30,9 +30,7 @@ class fermenter:
 
         # Temp
         self.TEMP_SET = 30
-        self.TEMP_MARGIN = 0.5
-        self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
-
+        self.TEMP_MARGIN = 0.4
 
         # Colors
         self.COLOR_RED = (20, 0, 0)
@@ -257,7 +255,6 @@ class fermenter:
 
     def update_temp_values(self, increment):
         self.TEMP_SET += increment
-        self.TEMP_MAX = self.TEMP_SET + self.TEMP_MARGIN
 
     def update_values(self):
         if self.screens_menu[self.screen_index] == "dashboard":
@@ -293,35 +290,39 @@ class fermenter:
 
     def heating_system(self, temp):
         temp_error = abs(self.TEMP_SET - temp)
-        temp_power = simpleio.map_range(temp_error, 0, 8, 0, 100)
+        temp_power = simpleio.map_range(temp_error, 0, 8, 30, 100)
         if self.STATUS:
-            if temp <= self.TEMP_SET:
+            if temp > self.TEMP_SET + self.TEMP_MARGIN * 2:
+                # cooler on
+                self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
+                self.LED.color = self.COLOR_BLUE
+                self.STATUS_SENTENCE = "Cooling down to"
+                self.STATUS_SUBSENTENCE = "the good temperature."
+                if temp > self.TEMP_SET + 5:
+                    self.STATUS_SENTENCE = "⚠ It's too hot here," 
+                    self.STATUS_SUBSENTENCE = "open the door please."
+            if temp > self.TEMP_SET + self.TEMP_MARGIN:
+                # heater off
+                self.HEAT.duty_cycle = 0
+            if self.TEMP_SET - self.TEMP_MARGIN/2 < temp < self.TEMP_SET + self.TEMP_MARGIN:
+                # set point & cooler off
+                self.FAN.duty_cycle = 0
+                self.LED.color = self.COLOR_GREEN
+                self.STATUS_SENTENCE = "Good temperature."
+                self.STATUS_SUBSENTENCE = "It feels great."
+            if temp < self.TEMP_SET - self.TEMP_MARGIN:
+                # heater on
                 self.HEAT.duty_cycle = percent_to_duty_cycles(100)
                 self.LED.color = self.COLOR_RED
                 self.STATUS_SENTENCE = "Heating up to the"
                 self.STATUS_SUBSENTENCE = "good temperature."
-                self.FAN.duty_cycle = 0
-            elif temp > self.TEMP_MAX:
-                self.LED.color = self.COLOR_BLUE
-                self.STATUS_SENTENCE = "Cooling down to"
-                self.STATUS_SUBSENTENCE = "the good temperature."
-                self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
-                self.HEAT.duty_cycle = 0
-                if temp > self.TEMP_MAX + 5:
-                    self.STATUS_SENTENCE = "⚠ It's too hot here," 
-                    self.STATUS_SUBSENTENCE = "open the door please."
-            else:
-                self.LED.color = self.COLOR_GREEN
-                self.STATUS_SENTENCE = "Good temperature."
-                self.STATUS_SUBSENTENCE = "It feels great."
-                self.HEAT.duty_cycle = 0
-                self.FAN.duty_cycle = 0
         else:
             self.LED.color = self.COLOR_WHITE
             self.STATUS_SENTENCE = " Timer expired."
             self.STATUS_SUBSENTENCE = "How did it go?"
             self.FAN.duty_cycle = percent_to_duty_cycles(100)
             self.HEAT.duty_cycle = 0
+        
 
         self.update_status_sentence()
         self.update_values()
