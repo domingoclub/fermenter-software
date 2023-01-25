@@ -21,7 +21,7 @@ class fermenter:
     def __init__(self):
 
         # General
-        self.VERSION = "software v0.9.2-s"
+        self.VERSION = "software v0.9.2.1-s"
         self.DELAY_SCREENS = 3
         self.DELAY_ACTIONS = 1
         self.STATUS_SENTENCE = ""
@@ -34,14 +34,14 @@ class fermenter:
         self.TEMP_MIN = self.TEMP_SET
 
         # Colors
-        self.COLOR_RED = (20, 0, 0)
-        self.COLOR_GREEN = (0, 20, 0)
-        self.COLOR_BLUE = (0, 0, 20)
+        self.COLOR_RED = (100, 0, 0)
+        self.COLOR_GREEN = (0, 100, 0)
+        self.COLOR_BLUE = (0, 0, 100)
         self.COLOR_BLACK = (0, 0, 0)
         self.COLOR_WHITE = (100, 100, 100)
 
         # Time
-        self.TIME_TIMER_HOURS = 36
+        self.TIME_TIMER_HOURS = 48
         self.TIME_THRESHOLD_DAYS = 72
         self.TIME_STARTUP = time.time()
         self.TIME_LEFT = self.TIME_TIMER_HOURS
