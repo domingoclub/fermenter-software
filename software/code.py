@@ -82,7 +82,7 @@ class fermenter:
         display_bus = displayio.I2CDisplay(display_i2c, device_address=0x3c)
         self.DISPLAY_WIDTH = 130
         self.DISPLAY_HEIGHT = 64
-        self.display = adafruit_displayio_sh1106.SH1106(display_bus, width=self.DISPLAY_WIDTH, height=self.DISPLAY_HEIGHT)
+        self.display = adafruit_displayio_sh1106.SH1106(display_bus, width=self.DISPLAY_WIDTH, height=self.DISPLAY_HEIGHT, rotation=180)
 
         # Display context
         self.screen = displayio.Group()
