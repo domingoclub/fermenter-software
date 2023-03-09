@@ -1,9 +1,12 @@
+sensor_model = "sht31d" # sht31d or mcp9808
+
 import board
 import busio
 import time
 from digitalio import DigitalInOut, Direction, Pull
 import rotaryio
-import adafruit_mcp9808
+if sensor_model == "sht31d": import adafruit_sht31d
+if sensor_model == "mcp9808": import adafruit_mcp9808
 import displayio
 import adafruit_displayio_sh1106
 from adafruit_display_text import label
@@ -66,7 +69,8 @@ class fermenter:
 
         # Sensor
         self.sensor_i2c = busio.I2C(board.GP13, board.GP12)
-        self.sensor = adafruit_mcp9808.MCP9808(self.sensor_i2c)
+        if sensor_model == "sht31d": self.sensor = adafruit_sht31d.SHT31D(self.sensor_i2c)
+        if sensor_model == "mcp9808": self.sensor = adafruit_mcp9808.MCP9808(self.sensor_i2c)        
 
         # Fan
         self.FAN = pwmio.PWMOut(board.GP6, frequency=20000)
@@ -82,7 +86,7 @@ class fermenter:
         display_bus = displayio.I2CDisplay(display_i2c, device_address=0x3c)
         self.DISPLAY_WIDTH = 130
         self.DISPLAY_HEIGHT = 64
-        self.display = adafruit_displayio_sh1106.SH1106(display_bus, width=self.DISPLAY_WIDTH, height=self.DISPLAY_HEIGHT, rotation=180)
+        self.display = adafruit_displayio_sh1106.SH1106(display_bus, width=self.DISPLAY_WIDTH, height=self.DISPLAY_HEIGHT, rotation=0)
 
         # Display context
         self.screen = displayio.Group()
