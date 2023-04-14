@@ -16,6 +16,7 @@ import neopixel
 sensor_model = "aht20"  # sht31d or mcp9808 or aht20
 display_orientation = "reversed"  # normal or reversed
 led_model = "external"  # external or onboard
+interface_type = "minimal"  # complete or minimal
 
 if sensor_model == "sht31d":
     import adafruit_sht31d
@@ -142,19 +143,25 @@ class fermenter:
         self.screen.append(self.menu_right_area)
 
         # Screens
-        self.screens_intro = [
-            "header", "define_temp", "define_time", "all_set"]
-        self.screens_menu = ["dashboard",
-                             "define_temp", "define_time", "footer"]
+        self.screens_intro = ["header", "define_temp", "define_time", "all_set"]
+        self.screens_menu = ["dashboard","define_temp", "define_time", "footer"]
         self.screen_index = 0
         self.menu_on = False
         self.edit_mode = True
 
         # First screens
-        self.display_screen(self.menu_on, 0)
-        time.sleep(self.DELAY_SCREENS)
-        self.screen_index = 1
-        self.display_screen(self.menu_on, 1)
+        if interface_type == "complete":
+            self.display_screen(self.menu_on, 0)
+            time.sleep(self.DELAY_SCREENS)
+            self.screen_index = 1
+            self.display_screen(self.menu_on, 1)
+        if interface_type == "minimal":
+            self.display_screen(self.menu_on, 0)
+            time.sleep(self.DELAY_SCREENS)
+            self.display_screen(self.menu_on, 3)
+            time.sleep(self.DELAY_SCREENS)
+            self.menu_on = True
+            self.display_screen(True, 0)
 
     def display_screen(self, menu, i):
         self.content1_area.text = self.content2_area.text = self.content3_area.text = self.content3_extra_area.text = self.content4_area.text = ""
