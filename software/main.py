@@ -1,3 +1,4 @@
+import os
 import board
 import busio
 import time
@@ -13,11 +14,10 @@ import adafruit_rgbled
 import displayio
 import neopixel
 
-sensor_model = "aht20"  # sht31d or mcp9808 or aht20
-display_orientation = "reversed"  # normal or reversed
-led_model = "external"  # external or onboard
-interface_type = "minimal"  # complete or minimal
+software_version = "software v0.9.6"
 
+led_model = os.getenv('led_model')
+sensor_model = os.getenv('sensor_model')
 if sensor_model == "sht31d":
     import adafruit_sht31d
 if sensor_model == "mcp9808":
@@ -32,8 +32,6 @@ class fermenter:
 
     def __init__(self):
 
-        self.SOFTWARE_VERSION = "software v0.9.5.1"
-
         # General
         self.DELAY_SCREENS = 3
         self.DELAY_ACTIONS = 1
@@ -41,7 +39,7 @@ class fermenter:
         self.STATUS_SUBSENTENCE = ""
 
         # Temp
-        self.TEMP_SET = 30
+        self.TEMP_SET = os.getenv('target_temperature')
         self.TEMP_MARGIN = 0.4
 
         # Colors
@@ -52,7 +50,7 @@ class fermenter:
         self.COLOR_WHITE = (250, 250, 250, 0)
 
         # Time
-        self.TIME_TIMER_HOURS = 48
+        self.TIME_TIMER_HOURS = os.getenv('timer_hours')
         self.TIME_THRESHOLD_DAYS = 72
         self.TIME_STARTUP = time.time()
         self.TIME_LEFT = self.TIME_TIMER_HOURS
@@ -104,6 +102,7 @@ class fermenter:
         display_bus = displayio.I2CDisplay(display_i2c, device_address=0x3c)
         self.DISPLAY_WIDTH = 130
         self.DISPLAY_HEIGHT = 64
+        display_orientation = os.getenv('display_orientation')
         rotation = 0 if display_orientation == 'normal' else 180
         self.display = adafruit_displayio_sh1106.SH1106(
             display_bus, width=self.DISPLAY_WIDTH, height=self.DISPLAY_HEIGHT, rotation=rotation)
@@ -150,6 +149,7 @@ class fermenter:
         self.edit_mode = True
 
         # First screens
+        interface_type = os.getenv('interface_type')
         if interface_type == "complete":
             self.display_screen(self.menu_on, 0)
             time.sleep(self.DELAY_SCREENS)
@@ -216,7 +216,7 @@ class fermenter:
                     int(self.TIME_TIMER_HOURS))
             elif self.screens_menu[i] == "footer":
                 self.content1_area.text = "Domingo Fermenter"
-                self.content2_area.text = self.SOFTWARE_VERSION
+                self.content2_area.text = software_version
                 self.content3_area.text = "domingoclub.com"
                 self.content4_area.text = "⚙ ⚙ ⚙"
 
@@ -345,8 +345,10 @@ class fermenter:
             if temp > self.TEMP_SET + self.TEMP_MARGIN * 2:
                 # cooler on
                 self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
-                self.LED.color = self.COLOR_BLUE
-                self.LED.fill(self.COLOR_BLUE)
+                if led_model == "onboard":
+                    self.LED.color = self.COLOR_BLUE
+                else:
+                    self.LED.fill(self.COLOR_BLUE)
                 self.STATUS_SENTENCE = "Cooling down to"
                 self.STATUS_SUBSENTENCE = "the good temperature."
                 if temp > self.TEMP_SET + 5:
@@ -358,20 +360,29 @@ class fermenter:
             if self.TEMP_SET - self.TEMP_MARGIN/2 < temp < self.TEMP_SET + self.TEMP_MARGIN:
                 # set point & cooler off
                 self.FAN.duty_cycle = 0
-                self.LED.color = self.COLOR_GREEN
-                self.LED.fill(self.COLOR_GREEN)
+                if led_model == "onboard":
+                    self.LED.color = self.COLOR_GREEN
+                else:
+                    self.LED.fill(self.COLOR_GREEN)
                 self.STATUS_SENTENCE = "Good temperature."
                 self.STATUS_SUBSENTENCE = "It feels great."
             if temp < self.TEMP_SET - self.TEMP_MARGIN:
                 # heater on
-                self.HEAT.duty_cycle = percent_to_duty_cycles(100)
-                self.LED.color = self.COLOR_RED
-                self.LED.fill(self.COLOR_RED)
+                temp_power_boost = temp_power * 1.7
+                if temp_power_boost > 90: temp_power_boost = 90
+                self.HEAT.duty_cycle = percent_to_duty_cycles(temp_power_boost)
+                print("Temperature: " + str(temp) + " | Power: " + str(temp_power_boost))
+                if led_model == "onboard":
+                    self.LED.color = self.COLOR_RED
+                else:
+                    self.LED.fill(self.COLOR_RED)
                 self.STATUS_SENTENCE = "Heating up to the"
                 self.STATUS_SUBSENTENCE = "good temperature."
         else:
-            self.LED.color = self.COLOR_WHITE
-            self.LED.fill(self.COLOR_WHITE)
+            if led_model == "onboard":
+                self.LED.color = self.COLOR_WHITE
+            else:
+                self.LED.fill(self.COLOR_WHITE)
             self.STATUS_SENTENCE = " Timer expired."
             self.STATUS_SUBSENTENCE = "How did it go?"
             self.FAN.duty_cycle = percent_to_duty_cycles(100)
@@ -392,6 +403,7 @@ class fermenter:
 
 
 def percent_to_duty_cycles(percent):
+    if percent > 100: percent = 100
     duty_cycles = int(simpleio.map_range(percent, 0, 100, 0, 65532))
     return duty_cycles
 
