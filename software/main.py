@@ -14,7 +14,7 @@ import adafruit_rgbled
 import displayio
 import neopixel
 
-software_version = "software v0.9.6"
+software_version = "software v0.9.6.1"
 
 led_model = os.getenv('led_model')
 sensor_model = os.getenv('sensor_model')
@@ -39,8 +39,11 @@ class fermenter:
         self.STATUS_SUBSENTENCE = ""
 
         # Temp
+        self.TEMP = os.getenv('target_temperature')
         self.TEMP_SET = os.getenv('target_temperature')
         self.TEMP_MARGIN = 0.4
+        self.TEMP_SAFE = 24
+        
 
         # Colors
         self.COLOR_RED = (250, 0, 0, 0)
@@ -80,14 +83,8 @@ class fermenter:
             self.LED = neopixel.NeoPixel(
                 self.PIN_LED, 1, pixel_order=(1, 0, 2, 3))
         # Sensor
-        self.sensor_i2c = busio.I2C(board.GP13, board.GP12)
-        if sensor_model == "sht31d":
-            self.sensor = adafruit_sht31d.SHT31D(self.sensor_i2c)
-        if sensor_model == "mcp9808":
-            self.sensor = adafruit_mcp9808.MCP9808(self.sensor_i2c)
-        if sensor_model == "aht20":
-            self.sensor = adafruit_ahtx0.AHTx0(self.sensor_i2c)
-
+        self.sensor_init()
+        
         # Fan
         self.FAN = pwmio.PWMOut(board.GP6, frequency=20000)
         self.FAN.duty_cycle = 0
@@ -149,19 +146,34 @@ class fermenter:
         self.edit_mode = True
 
         # First screens
-        interface_type = os.getenv('interface_type')
-        if interface_type == "complete":
+        introduction = os.getenv('introduction')
+        if introduction == "true":
             self.display_screen(self.menu_on, 0)
             time.sleep(self.DELAY_SCREENS)
             self.screen_index = 1
-            self.display_screen(self.menu_on, 1)
-        if interface_type == "minimal":
+            self.display_screen(self.menu_on, self.screen_index)
+        else:
             self.display_screen(self.menu_on, 0)
-            time.sleep(self.DELAY_SCREENS)
-            self.display_screen(self.menu_on, 3)
-            time.sleep(self.DELAY_SCREENS)
-            self.menu_on = True
-            self.display_screen(True, 0)
+            self.goto("dashboard", "")
+
+    def sensor_init(self):
+        try:
+            self.sensor_i2c = busio.I2C(board.GP13, board.GP12)
+            if sensor_model == "sht31d":
+                self.sensor = adafruit_sht31d.SHT31D(self.sensor_i2c)
+            if sensor_model == "mcp9808":
+                self.sensor = adafruit_mcp9808.MCP9808(self.sensor_i2c)
+            if sensor_model == "aht20":
+                self.sensor = adafruit_ahtx0.AHTx0(self.sensor_i2c)
+            self.sensor_has_error = False
+        except:
+            self.sensor_error()
+            self.sensor_has_error = True
+            
+    def sensor_error(self):
+        self.HEAT.duty_cycle = 0
+        self.FAN.duty_cycle = 0
+        print("Sensor error")
 
     def display_screen(self, menu, i):
         self.content1_area.text = self.content2_area.text = self.content3_area.text = self.content3_extra_area.text = self.content4_area.text = ""
@@ -307,14 +319,14 @@ class fermenter:
         if self.screens_menu[self.screen_index] == "dashboard":
             if self.STATUS:
                 self.content3_extra_area.text = " {} C inside".format(
-                    round_down(self.sensor.temperature, 1))
+                    round_down(self.TEMP, 1))
                 self.content4_area.text = " {} left".format(
                     timer_unit(int(self.TIME_LEFT // 3600) + 1))
             else:
                 self.content3_area.text = "Observe, sense."
                 self.content3_extra_area.text = ""
                 self.content4_area.text = "{} C inside.".format(
-                    round_down(self.sensor.temperature, 1))
+                    round_down(self.TEMP, 1))
 
     def update_status_sentence(self):
         if self.screens_menu[self.screen_index] == "dashboard":
@@ -340,11 +352,12 @@ class fermenter:
 
     def heating_system(self, temp):
         temp_error = abs(self.TEMP_SET - temp)
-        temp_power = simpleio.map_range(temp_error, 0, 8, 30, 100)
+        power_fan = simpleio.map_range(temp_error, 0, 8, 30, 100)
+        power_heater = simpleio.map_range(temp_error, 0, 8, 50, 80)
         if self.STATUS:
             if temp > self.TEMP_SET + self.TEMP_MARGIN * 2:
                 # cooler on
-                self.FAN.duty_cycle = percent_to_duty_cycles(temp_power)
+                self.FAN.duty_cycle = percent_to_duty_cycles(power_fan)
                 if led_model == "onboard":
                     self.LED.color = self.COLOR_BLUE
                 else:
@@ -368,16 +381,14 @@ class fermenter:
                 self.STATUS_SUBSENTENCE = "It feels great."
             if temp < self.TEMP_SET - self.TEMP_MARGIN:
                 # heater on
-                temp_power_boost = temp_power * 1.7
-                if temp_power_boost > 90: temp_power_boost = 90
-                self.HEAT.duty_cycle = percent_to_duty_cycles(temp_power_boost)
-                print("Temperature: " + str(temp) + " | Power: " + str(temp_power_boost))
+                self.HEAT.duty_cycle = percent_to_duty_cycles(power_heater)
                 if led_model == "onboard":
                     self.LED.color = self.COLOR_RED
                 else:
                     self.LED.fill(self.COLOR_RED)
                 self.STATUS_SENTENCE = "Heating up to the"
                 self.STATUS_SUBSENTENCE = "good temperature."
+            print("Temperature: " + str(temp))
         else:
             if led_model == "onboard":
                 self.LED.color = self.COLOR_WHITE
@@ -404,7 +415,7 @@ class fermenter:
 
 def percent_to_duty_cycles(percent):
     if percent > 100: percent = 100
-    duty_cycles = int(simpleio.map_range(percent, 0, 100, 0, 65532))
+    duty_cycles = int(simpleio.map_range(percent, 0, 100, 0, 65535))
     return duty_cycles
 
 
@@ -433,11 +444,17 @@ if __name__ == '__main__':
     fermenter = fermenter()
 
     while True:
-        temp = fermenter.sensor.temperature
         timer = fermenter.TIME_TIMER_HOURS
+        try:
+            fermenter.TEMP = fermenter.sensor.temperature
+            fermenter.sensor_has_error = False
+        except:
+            fermenter.sensor_has_error = True
+            fermenter.sensor_error()
+            fermenter.sensor_init()
         fermenter.encoder_handler()
         fermenter.button_handler()
         fermenter.timer(timer)
-        if fermenter.menu_on:
-            fermenter.heating_system(temp)
+        if fermenter.menu_on and not fermenter.sensor_has_error:
+            fermenter.heating_system(fermenter.TEMP)
         # time.sleep(0.25)

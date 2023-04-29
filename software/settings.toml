@@ -4,4 +4,4 @@ timer_hours = 48
 sensor_model = "sht31d"  # sht31d or mcp9808 or aht20
 display_orientation = "reversed"  # normal or reversed
 led_model = "external"  # external or onboard
-interface_type = "minimal"  # complete or minimal
+introduction = "false"  # true or false
