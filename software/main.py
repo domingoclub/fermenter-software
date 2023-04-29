@@ -14,7 +14,7 @@ import adafruit_rgbled
 import displayio
 import neopixel
 
-software_version = "software v0.9.6.1"
+software_version = "software v0.9.6.2"
 
 led_model = os.getenv('led_model')
 sensor_model = os.getenv('sensor_model')
