@@ -14,8 +14,9 @@ import adafruit_rgbled
 import displayio
 import neopixel
 
-software_version = "software v0.9.6.2"
+software_version = "software v0.9.7"
 
+fermenter_model = os.getenv('fermenter_model')
 led_model = os.getenv('led_model')
 sensor_model = os.getenv('sensor_model')
 if sensor_model == "sht31d":
@@ -43,7 +44,6 @@ class fermenter:
         self.TEMP_SET = os.getenv('target_temperature')
         self.TEMP_MARGIN = 0.4
         self.TEMP_SAFE = 24
-        
 
         # Colors
         self.COLOR_RED = (250, 0, 0, 0)
@@ -84,7 +84,7 @@ class fermenter:
                 self.PIN_LED, 1, pixel_order=(1, 0, 2, 3))
         # Sensor
         self.sensor_init()
-        
+
         # Fan
         self.FAN = pwmio.PWMOut(board.GP6, frequency=20000)
         self.FAN.duty_cycle = 0
@@ -139,8 +139,10 @@ class fermenter:
         self.screen.append(self.menu_right_area)
 
         # Screens
-        self.screens_intro = ["header", "define_temp", "define_time", "all_set"]
-        self.screens_menu = ["dashboard","define_temp", "define_time", "footer"]
+        self.screens_intro = [
+            "header", "define_temp", "define_time", "all_set"]
+        self.screens_menu = ["dashboard",
+                             "define_temp", "define_time", "footer"]
         self.screen_index = 0
         self.menu_on = False
         self.edit_mode = True
@@ -169,7 +171,7 @@ class fermenter:
         except:
             self.sensor_error()
             self.sensor_has_error = True
-            
+
     def sensor_error(self):
         self.HEAT.duty_cycle = 0
         self.FAN.duty_cycle = 0
@@ -351,9 +353,14 @@ class fermenter:
             self.display_screen(self.menu_on, self.screen_index)
 
     def heating_system(self, temp):
+        time_now = time.time()
+        time_diff = time_now - self.TIME_HEATER
         temp_error = abs(self.TEMP_SET - temp)
         power_fan = simpleio.map_range(temp_error, 0, 8, 30, 100)
-        power_heater = simpleio.map_range(temp_error, 0, 8, 50, 80)
+        if fermenter_model == "lab":
+            power_heater = simpleio.map_range(temp_error, 0, 8, 50, 80)
+        elif fermenter_model == "mini":
+            power_heater = simpleio.map_range(temp_error, 0, 8, 50, 70)
         if self.STATUS:
             if temp > self.TEMP_SET + self.TEMP_MARGIN * 2:
                 # cooler on
@@ -382,6 +389,12 @@ class fermenter:
             if temp < self.TEMP_SET - self.TEMP_MARGIN:
                 # heater on
                 self.HEAT.duty_cycle = percent_to_duty_cycles(power_heater)
+                # fan ON for 3 sec every 60 secs
+                if time_diff > 60:
+                    self.FAN.duty_cycle = percent_to_duty_cycles(5)
+                if time_diff > 63:
+                    self.FAN.duty_cycle = 0
+                    self.TIME_HEATER = time.time()
                 if led_model == "onboard":
                     self.LED.color = self.COLOR_RED
                 else:
@@ -414,7 +427,8 @@ class fermenter:
 
 
 def percent_to_duty_cycles(percent):
-    if percent > 100: percent = 100
+    if percent > 100:
+        percent = 100
     duty_cycles = int(simpleio.map_range(percent, 0, 100, 0, 65535))
     return duty_cycles
 
@@ -440,9 +454,8 @@ def timer_unit(hour):
 
 
 if __name__ == '__main__':
-
     fermenter = fermenter()
-
+    fermenter.TIME_HEATER = time.time()
     while True:
         timer = fermenter.TIME_TIMER_HOURS
         try:
