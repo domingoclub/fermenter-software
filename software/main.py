@@ -14,7 +14,7 @@ import adafruit_rgbled
 import displayio
 import neopixel
 
-software_version = "software v0.9.7"
+software_version = "software v0.9.7.2"
 
 fermenter_model = os.getenv('fermenter_model')
 led_model = os.getenv('led_model')
@@ -358,9 +358,9 @@ class fermenter:
         temp_error = abs(self.TEMP_SET - temp)
         power_fan = simpleio.map_range(temp_error, 0, 8, 30, 100)
         if fermenter_model == "lab":
-            power_heater = simpleio.map_range(temp_error, 0, 8, 50, 80)
+            power_heater = simpleio.map_range(temp_error, 0, 8, 50, 85)
         elif fermenter_model == "mini":
-            power_heater = simpleio.map_range(temp_error, 0, 8, 50, 70)
+            power_heater = simpleio.map_range(temp_error, 0, 8, 50, 75)
         if self.STATUS:
             if temp > self.TEMP_SET + self.TEMP_MARGIN * 2:
                 # cooler on
@@ -380,6 +380,7 @@ class fermenter:
             if self.TEMP_SET - self.TEMP_MARGIN/2 < temp < self.TEMP_SET + self.TEMP_MARGIN:
                 # set point & cooler off
                 self.FAN.duty_cycle = 0
+                self.air_circultation(time_diff, 60, 3)
                 if led_model == "onboard":
                     self.LED.color = self.COLOR_GREEN
                 else:
@@ -389,12 +390,7 @@ class fermenter:
             if temp < self.TEMP_SET - self.TEMP_MARGIN:
                 # heater on
                 self.HEAT.duty_cycle = percent_to_duty_cycles(power_heater)
-                # fan ON for 3 sec every 60 secs
-                if time_diff > 60:
-                    self.FAN.duty_cycle = percent_to_duty_cycles(5)
-                if time_diff > 63:
-                    self.FAN.duty_cycle = 0
-                    self.TIME_HEATER = time.time()
+                self.air_circultation(time_diff, 60, 3)
                 if led_model == "onboard":
                     self.LED.color = self.COLOR_RED
                 else:
@@ -424,6 +420,14 @@ class fermenter:
             self.STATUS = True
         else:
             self.STATUS = False
+    
+    def air_circultation(self, time_diff, interval, duration):
+        # fan ON for 3 sec every 60 secs
+        if time_diff > interval:
+            self.FAN.duty_cycle = percent_to_duty_cycles(5)
+        if time_diff > interval + duration:
+            self.FAN.duty_cycle = 0
+            self.TIME_HEATER = time.time()
 
 
 def percent_to_duty_cycles(percent):
