@@ -14,7 +14,7 @@ import adafruit_rgbled
 import displayio
 import neopixel
 
-software_version = "software v0.9.7.2"
+software_version = "software v0.9.7.4"
 
 fermenter_model = os.getenv('fermenter_model')
 led_model = os.getenv('led_model')
@@ -82,9 +82,6 @@ class fermenter:
             self.PIN_LED = board.GP28
             self.LED = neopixel.NeoPixel(
                 self.PIN_LED, 1, pixel_order=(1, 0, 2, 3))
-        # Sensor
-        self.sensor_init()
-
         # Fan
         self.FAN = pwmio.PWMOut(board.GP6, frequency=20000)
         self.FAN.duty_cycle = 0
@@ -97,7 +94,7 @@ class fermenter:
         displayio.release_displays()
         display_i2c = busio.I2C(board.GP27, board.GP26, frequency=400000)
         display_bus = displayio.I2CDisplay(display_i2c, device_address=0x3c)
-        self.DISPLAY_WIDTH = 130
+        self.DISPLAY_WIDTH = 133
         self.DISPLAY_HEIGHT = 64
         display_orientation = os.getenv('display_orientation')
         rotation = 0 if display_orientation == 'normal' else 180
@@ -158,6 +155,9 @@ class fermenter:
             self.display_screen(self.menu_on, 0)
             self.goto("dashboard", "")
 
+       # Sensor
+        self.sensor_init()
+
     def sensor_init(self):
         try:
             self.sensor_i2c = busio.I2C(board.GP13, board.GP12)
@@ -175,6 +175,7 @@ class fermenter:
     def sensor_error(self):
         self.HEAT.duty_cycle = 0
         self.FAN.duty_cycle = 0
+        self.goto("dashboard", "")
         print("Sensor error")
 
     def display_screen(self, menu, i):
@@ -218,8 +219,18 @@ class fermenter:
             self.content4_area.color = 0xFFFFFF
             self.content4_area.background_color = 0x000000
             if self.screens_menu[i] == "dashboard":
-                self.update_status_sentence()
-                self.update_values()
+                try:
+                    if self.sensor_has_error == False:
+                        self.update_status_sentence()
+                        self.update_values()
+                    else:
+                        self.content1_area.text = "The sensor seems"
+                        self.content2_area.text = "disconnected ..."
+                        self.content3_area.text = ""
+                        self.content4_area.text = ""
+                except:
+                    self.update_status_sentence()
+                    self.update_values()
             elif self.screens_menu[i] == "define_temp":
                 self.content1_area.text = " Set: Temperature"
                 self.content4_area.text = "{} C".format(
@@ -356,11 +367,11 @@ class fermenter:
         time_now = time.time()
         time_diff = time_now - self.TIME_HEATER
         temp_error = abs(self.TEMP_SET - temp)
-        power_fan = simpleio.map_range(temp_error, 0, 8, 30, 100)
+        power_fan = simpleio.map_range(temp_error, 0, 8, 50, 100)
         if fermenter_model == "lab":
-            power_heater = simpleio.map_range(temp_error, 0, 8, 50, 85)
+            power_heater = 80  # between 60 and 100
         elif fermenter_model == "mini":
-            power_heater = simpleio.map_range(temp_error, 0, 8, 50, 75)
+            power_heater = 60  # between 50 and 75
         if self.STATUS:
             if temp > self.TEMP_SET + self.TEMP_MARGIN * 2:
                 # cooler on
@@ -380,7 +391,7 @@ class fermenter:
             if self.TEMP_SET - self.TEMP_MARGIN/2 < temp < self.TEMP_SET + self.TEMP_MARGIN:
                 # set point & cooler off
                 self.FAN.duty_cycle = 0
-                self.air_circultation(time_diff, 60, 3)
+                self.air_circultation(time_diff, 120, 3)
                 if led_model == "onboard":
                     self.LED.color = self.COLOR_GREEN
                 else:
@@ -390,7 +401,7 @@ class fermenter:
             if temp < self.TEMP_SET - self.TEMP_MARGIN:
                 # heater on
                 self.HEAT.duty_cycle = percent_to_duty_cycles(power_heater)
-                self.air_circultation(time_diff, 60, 3)
+                self.air_circultation(time_diff, 180, 3)
                 if led_model == "onboard":
                     self.LED.color = self.COLOR_RED
                 else:
@@ -420,7 +431,7 @@ class fermenter:
             self.STATUS = True
         else:
             self.STATUS = False
-    
+
     def air_circultation(self, time_diff, interval, duration):
         # fan ON for 3 sec every 60 secs
         if time_diff > interval:
