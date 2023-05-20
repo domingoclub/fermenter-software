@@ -10,7 +10,7 @@ def start_introduction():
         modules.display.display_screen(modules.globals.menu_on, 0)
         time.sleep(modules.globals.DELAY_SCREENS)
         modules.globals.screen_index = 1
-        modules.display.display_screen('intro', modules.globals.screen_index)
+        modules.display.display_screen(modules.globals.menu_on, modules.globals.screen_index)
     else:
         modules.display.display_screen('menu', 0)
         goto("dashboard", "")
