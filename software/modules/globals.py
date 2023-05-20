@@ -4,7 +4,7 @@ import time
 def initialize():
 
     global SOFTWARE_VERSION
-    SOFTWARE_VERSION = "software v0.9.8"
+    SOFTWARE_VERSION = "software v0.9.8.1"
 
     global temp
     temp = os.getenv('target_temperature')
@@ -17,6 +17,9 @@ def initialize():
 
     global time_heater
     time_heater = time.time()
+
+    global time_sensor
+    time_sensor = time.time()
 
     global timer_hours
     timer_hours = os.getenv('timer_hours')
