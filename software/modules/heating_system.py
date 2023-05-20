@@ -62,10 +62,10 @@ def update_led(color, steps):
 
     if modules.globals.screen_index == 0:
         if not led_rewind:
-            if led_counter <= 250 - steps: led_counter += steps
+            if led_counter <= 200 - steps: led_counter += steps
             else: led_rewind = True
         else:
-            if led_counter >= 0 + steps: led_counter -= steps
+            if led_counter >= 30 + steps: led_counter -= steps
             else: led_rewind = False
     else:
         led_counter = 120
@@ -73,9 +73,6 @@ def update_led(color, steps):
     if color == "red":
         color_red = (led_counter, 0, 0, 0)
         LED.color = color_red if LED_MODEL == "onboard" else LED.fill(color_red)
-    if color == "purple":
-        color_purple = (led_counter, 0, led_counter, 0)
-        LED.color = color_purple if LED_MODEL == "onboard" else LED.fill(color_purple)
     elif color == "green":
         color_green = (0, led_counter, 0, 0)
         LED.color = color_green if LED_MODEL == "onboard" else LED.fill(color_green)
@@ -88,6 +85,9 @@ def update_led(color, steps):
     elif color == "white":
         color_white = (led_counter, led_counter, led_counter, 0)
         LED.color = color_white if LED_MODEL == "onboard" else LED.fill(color_white)
+    elif color == "purple":
+        color_purple = (led_counter, 0, led_counter, 0)
+        LED.color = color_purple if LED_MODEL == "onboard" else LED.fill(color_purple)
     
         
 
@@ -116,7 +116,7 @@ def heating_system(temp, temp_target, temp_margin):
             if temp > temp_target + temp_margin * 2:
                 # cooler on
                 FAN.duty_cycle = modules.utilities.percent_to_duty_cycles(power_fan)
-                update_led('blue', 12)
+                update_led('blue', 30)
                 modules.globals.status_sentence = "Cooling down to"
                 modules.globals.status_subssentence = "the good temperature."
                 if temp > temp_target + 5:
@@ -128,14 +128,14 @@ def heating_system(temp, temp_target, temp_margin):
             if temp_target - temp_margin/2 < temp < temp_target + temp_margin:
                 # set point and cooler off
                 FAN.duty_cycle = 0
-                update_led('green', 12)
+                update_led('green', 10)
                 modules.globals.status_sentence = "Good temperature."
                 modules.globals.status_subsentence = "It feels great."
                 air_circulation(time_diff, 120, 5)
             if temp < temp_target - temp_margin:
                 # heater on
                 HEAT.duty_cycle = modules.utilities.percent_to_duty_cycles(POWER_HEATER)
-                update_led('red', 12)
+                update_led('red', 15)
                 modules.globals.status_sentence = "Heating up to the"
                 modules.globals.status_subsentence = "good temperature."
                 air_circulation(time_diff, 180, 5)
@@ -152,7 +152,7 @@ def heating_system(temp, temp_target, temp_margin):
     else:
         modules.globals.status_sentence = " Timer expired."
         modules.globals.status_subsentence = "How did it go?"
-        update_led('white')
+        update_led('white', 60)
         if temp >= modules.globals.TEMP_SAFE:
             FAN.duty_cycle = modules.utilities.percent_to_duty_cycles(100)
         else:
