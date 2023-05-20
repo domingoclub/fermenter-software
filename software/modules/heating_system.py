@@ -65,7 +65,7 @@ def update_led(color, steps):
             if led_counter <= 250 - steps: led_counter += steps
             else: led_rewind = True
         else:
-            if led_counter >= 50 + steps: led_counter -= steps
+            if led_counter >= 0 + steps: led_counter -= steps
             else: led_rewind = False
     else:
         led_counter = 120
@@ -102,9 +102,9 @@ def air_circulation(time_diff, interval, duration):
 def heating_system(temp, temp_target, temp_margin):
 
     if FERMENTER_MODEL == "lab":
-        POWER_HEATER = 80  # between 60 and 100
+        POWER_HEATER = 85  # between 60 and 100
     elif FERMENTER_MODEL == "mini":
-        POWER_HEATER = 60  # between 50 and 75
+        POWER_HEATER = 70  # between 50 and 75
 
     temp_error = abs(temp_target - temp)
     power_fan = simpleio.map_range(temp_error, 0, 8, 50, 100)
@@ -144,7 +144,7 @@ def heating_system(temp, temp_target, temp_margin):
             FAN.duty_cycle = 0
             modules.globals.status_sentence = "The sensor is"
             modules.globals.status_subsentence = "not responding"
-            update_led('purple', 25)
+            update_led('purple', 40)
 
         update_status_sentence()
         update_values()
