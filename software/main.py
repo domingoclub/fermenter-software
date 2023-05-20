@@ -224,8 +224,8 @@ class fermenter:
                         self.update_status_sentence()
                         self.update_values()
                     else:
-                        self.content1_area.text = "The sensor seems"
-                        self.content2_area.text = "disconnected ..."
+                        self.content1_area.text = "No signal from"
+                        self.content2_area.text = "the sensor ..."
                         self.content3_area.text = ""
                         self.content4_area.text = ""
                 except:
@@ -391,7 +391,7 @@ class fermenter:
             if self.TEMP_SET - self.TEMP_MARGIN/2 < temp < self.TEMP_SET + self.TEMP_MARGIN:
                 # set point & cooler off
                 self.FAN.duty_cycle = 0
-                self.air_circultation(time_diff, 120, 3)
+                self.air_circulation(time_diff, 120, 3)
                 if led_model == "onboard":
                     self.LED.color = self.COLOR_GREEN
                 else:
@@ -401,7 +401,7 @@ class fermenter:
             if temp < self.TEMP_SET - self.TEMP_MARGIN:
                 # heater on
                 self.HEAT.duty_cycle = percent_to_duty_cycles(power_heater)
-                self.air_circultation(time_diff, 180, 3)
+                self.air_circulation(time_diff, 180, 3)
                 if led_model == "onboard":
                     self.LED.color = self.COLOR_RED
                 else:
@@ -432,11 +432,11 @@ class fermenter:
         else:
             self.STATUS = False
 
-    def air_circultation(self, time_diff, interval, duration):
+    def air_circulation(self, time_diff, interval, duration):
         # fan ON for 3 sec every 60 secs
         if time_diff > interval:
             self.FAN.duty_cycle = percent_to_duty_cycles(5)
-        if time_diff > interval + duration:
+        if time_diff > (interval + duration):
             self.FAN.duty_cycle = 0
             self.TIME_HEATER = time.time()
 
