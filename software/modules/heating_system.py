@@ -118,7 +118,7 @@ def heating_system(temp, temp_target, temp_margin):
                 FAN.duty_cycle = modules.utilities.percent_to_duty_cycles(power_fan)
                 update_led('blue', 30)
                 modules.globals.status_sentence = "Cooling down to"
-                modules.globals.status_subssentence = "the good temperature."
+                modules.globals.status_subsentence = "the good temperature."
                 if temp > temp_target + 5:
                     modules.globals.status_sentence = "⚠ It's too hot here,"
                     modules.globals.status_subsentence = "open the door please."
@@ -138,7 +138,7 @@ def heating_system(temp, temp_target, temp_margin):
                 update_led('red', 15)
                 modules.globals.status_sentence = "Heating up to the"
                 modules.globals.status_subsentence = "good temperature."
-                air_circulation(time_diff, 180, 5)
+                air_circulation(time_diff, 180, 3)
         else:
             HEAT.duty_cycle = 0
             FAN.duty_cycle = 0
