@@ -104,7 +104,7 @@ def heating_system(temp, temp_target, temp_margin):
     if FERMENTER_MODEL == "lab":
         POWER_HEATER = 85  # between 60 and 100
     elif FERMENTER_MODEL == "mini":
-        POWER_HEATER = 70  # between 50 and 75
+        POWER_HEATER = 75  # between 50 and 75
 
     temp_error = abs(temp_target - temp)
     power_fan = simpleio.map_range(temp_error, 0, 8, 50, 100)
