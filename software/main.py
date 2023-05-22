@@ -20,8 +20,6 @@ if __name__ == "__main__":
                     modules.globals.sensor_error = False
                 except:
                     modules.globals.sensor_error = True
-                    modules.globals.sensor_error_time += 1
-                    modules.sensor.sensor_check()
                 modules.globals.time_sensor = time.time()
             modules.heating_system.timer()
             if modules.globals.fermenter_running:
