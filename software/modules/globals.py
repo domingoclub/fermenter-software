@@ -4,7 +4,7 @@ import time
 def initialize():
 
     global SOFTWARE_VERSION
-    SOFTWARE_VERSION = "software v0.9.8.1"
+    SOFTWARE_VERSION = "software v0.9.8.2"
 
     global temp
     temp = os.getenv('target_temperature')
@@ -38,6 +38,12 @@ def initialize():
 
     global sensor_error
     sensor_error = False
+
+    global sensor_error_time
+    sensor_error_time = 0
+
+    global sensor_error_time_critical
+    sensor_error_time_critical = 0
 
     global fermenter_running
     fermenter_running = True
