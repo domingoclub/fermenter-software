@@ -6,3 +6,15 @@ sensor_model = "aht20"  # sht31d or mcp9808 or aht20
 display_orientation = "reversed"  # normal or reversed
 led_model = "external"  # external or onboard
 introduction = "true"  # true or false
+fermentations = {
+  [
+    name = "Tempeh Fermentation"
+    timeline =
+      1: 32
+      20: 32
+      24: 30
+      30: 28
+      36: 26
+      48: 26
+  ]
+}
