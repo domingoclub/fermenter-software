@@ -6,6 +6,8 @@ def initialize():
     global SOFTWARE_VERSION
     SOFTWARE_VERSION = "software v0.9.8.2"
 
+    global SENSOR
+
     global temp
     temp = os.getenv('target_temperature')
 
