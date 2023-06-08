@@ -4,7 +4,7 @@ import time
 def initialize():
 
     global SOFTWARE_VERSION
-    SOFTWARE_VERSION = "software v0.9.8.2"
+    SOFTWARE_VERSION = "software v0.9.8.3"
 
     global SENSOR
 

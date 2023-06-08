@@ -12,7 +12,9 @@ if SENSOR_MODEL == "mcp9808":
 if SENSOR_MODEL == "aht20":
     import adafruit_ahtx0
 
-SENSOR_I2C = busio.I2C(board.GP13, board.GP12)
+SENSOR_I2C = busio.I2C(board.GP13, board.GP12, frequency = 30000)
+
+
 
 def sensor_start():
     try:

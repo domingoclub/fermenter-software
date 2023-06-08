@@ -8,7 +8,7 @@ import modules.utilities
 FERMENTER_MODEL = os.getenv('fermenter_model')
 FAN = pwmio.PWMOut(board.GP6, frequency=20000)
 FAN.duty_cycle = 0
-HEAT = pwmio.PWMOut(board.GP8)
+HEAT = pwmio.PWMOut(board.GP8, frequency=20000)
 HEAT.duty_cycle = 0
 led_counter = 0
 led_rewind = False
