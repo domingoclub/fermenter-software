@@ -12,7 +12,8 @@ def start_introduction():
         modules.globals.screen_index = 1
         modules.display.display_screen(modules.globals.menu_on, modules.globals.manual_on, modules.globals.screen_index)
     else:
-        modules.display.display_screen('menu', 0)
+        modules.globals.manual_on = True
+        modules.display.display_screen(modules.globals.menu_on, modules.globals.manual_on, 0)
         goto("dashboard", "")
 
 

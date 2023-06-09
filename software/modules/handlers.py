@@ -99,6 +99,7 @@ def button_actions():
                     modules.menu.goto("define_temp", "Set!")
                 else:
                     modules.menu.goto("all_set", "Set!")
+                    modules.globals.timer_hours = modules.globals.modes[modules.globals.modes_index][1][-1]
                     time.sleep(modules.globals.DELAY_SCREENS)
                     modules.menu.goto("dashboard", "")
             elif screen == "define_temp":

@@ -158,3 +158,16 @@ def heating_system(temp, temp_target, temp_margin):
         else:
             FAN.duty_cycle = 0
         HEAT.duty_cycle = 0
+
+def update_target_temp(time_left, mode):
+    if not modules.globals.manual_on:
+        time_left_diff = modules.globals.timer_hours * 3600 - time_left
+        index = 0
+        for i in mode[1]:
+            iindex = index + 1 if index + 1 <= len(mode[1]) else index
+            if (mode[1][index] * 3600) < time_left_diff < (mode[1][iindex] * 3600):
+                # convert to percentage
+                modules.globals.temp_target = (mode[2][index] + mode[2][iindex]) / 2
+                print(modules.globals.temp_target)
+            index += 1
+            

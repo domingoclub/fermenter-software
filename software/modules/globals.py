@@ -16,9 +16,6 @@ def initialize():
     global modes_index
     modes_index = 0
 
-    global mode
-    mode = ""
-
     global temp
     temp = os.getenv('target_temperature')
 
