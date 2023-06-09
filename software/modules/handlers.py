@@ -3,6 +3,7 @@ import rotaryio
 import board
 import time
 import modules.globals
+import supervisor
 
 
 ENCODER = rotaryio.IncrementalEncoder(board.GP4, board.GP3)
@@ -29,7 +30,23 @@ def edit_handler(increment):
         screen = modules.globals.SCREENS_INTRO[modules.globals.screen_index]
     else:
         screen = modules.globals.SCREENS_MENU[modules.globals.screen_index]
-    if screen == "define_temp":
+    if screen == "select_mode" or screen == "change_mode":
+        modules.globals.modes_index += increment  * 2
+        if modules.globals.modes_index >= len(modules.globals.modes):
+            modules.globals.modes_index = 0
+        elif  modules.globals.modes_index < 0:
+            modules.globals.modes_index = len(modules.globals.modes) -1
+        else:
+            modules.globals.modes_index = int(modules.globals.modes_index)
+        if screen == "select_mode":
+            modules.globals.CONTENT_5_AREA.text = modules.globals.modes[modules.globals.modes_index][0]
+        else:
+            if modules.globals.modes_index % 2 == 0:
+                modules.globals.bool_string = "Yes please"
+            else:
+                modules.globals.bool_string = "No thanks"
+            modules.globals.CONTENT_5_AREA.text = modules.globals.bool_string
+    elif screen == "define_temp":
         update_temp_values(increment)
         modules.globals.CONTENT_5_AREA.text = "{} C".format(modules.utilities.round_down(modules.globals.temp_target, 1))
     elif screen == "define_time":
@@ -59,7 +76,13 @@ def menu_handler(increment):
             modules.globals.screen_index = 0
         elif modules.globals.screen_index < 0:
             modules.globals.screen_index = screens_length
-        modules.display.display_screen(modules.globals.menu_on, modules.globals.screen_index)
+        if not modules.globals.manual_on:
+            # Skip set temperature and timer
+            if modules.globals.screen_index == 1:
+                modules.globals.screen_index = 3
+            if modules.globals.screen_index == 2:
+                modules.globals.screen_index = 0
+        modules.display.display_screen(modules.globals.menu_on, modules.globals.manual_on, modules.globals.screen_index)
 
 def update_temp_values(increment):
     modules.globals.temp_target += increment
@@ -67,9 +90,18 @@ def update_temp_values(increment):
 def button_actions():
         modules.globals.CONTENT_5_AREA.color = 0xFFFFFF
         modules.globals.CONTENT_5_AREA.background_color = 0x000000
+
         if not modules.globals.menu_on:
             screen = modules.globals.SCREENS_INTRO[modules.globals.screen_index]
-            if screen == "define_temp":
+            if screen == "select_mode":
+                if modules.globals.modes[modules.globals.modes_index][0] == "Manual":
+                    modules.globals.manual_on =  True
+                    modules.menu.goto("define_temp", "Set!")
+                else:
+                    modules.menu.goto("all_set", "Set!")
+                    time.sleep(modules.globals.DELAY_SCREENS)
+                    modules.menu.goto("dashboard", "")
+            elif screen == "define_temp":
                 modules.menu.goto("define_time", "Set!")
             elif screen == "define_time":
                 modules.menu.goto("all_set", "Set!")
@@ -77,7 +109,7 @@ def button_actions():
                 modules.menu.goto("dashboard", "")
         elif modules.globals.menu_on:
             screen = modules.globals.SCREENS_MENU[modules.globals.screen_index]
-            if screen == "define_temp" or screen == "define_time":
+            if screen == "define_temp" or screen == "define_time" or screen == "change_mode":
                 if modules.globals.edit_mode == False:
                     modules.globals.CONTENT_5_AREA.color = 0x000000
                     modules.globals.CONTENT_5_AREA.background_color = 0xFFFFFF
@@ -90,7 +122,15 @@ def button_actions():
                     modules.globals.edit_mode = False
                     if screen == "define_time":
                         modules.globals.time_startup = time.time()
-                    modules.menu.goto("dashboard", "Set!")
+                    if screen == "change_mode" and modules.globals.bool_string == "Yes please":
+                        modules.globals.menu_on = False
+                        modules.globals.manual_on = False
+                        modules.globals.edit_mode = True
+                        modules.globals.modes_index = 0
+                        modules.menu.goto("select_mode", "Set!")
+                    else:
+                        modules.menu.goto("dashboard", "Set!")
+                    modules.globals.bool_string = "No thanks"
             elif screen == "dashboard" or screen == "footer":
                 modules.globals.CONTENT_1_AREA.text = "Turn the knob to "
                 modules.globals.CONTENT_2_AREA.text = "change the settings."

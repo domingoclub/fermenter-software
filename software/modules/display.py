@@ -56,7 +56,7 @@ SCREEN.append(modules.globals.MENU_LEFT_AREA)
 SCREEN.append(modules.globals.MENU_RIGHT_AREA)
 
 
-def display_screen(menu_on, screen_index):
+def display_screen(menu_on, manual_on, screen_index):
     modules.globals.CONTENT_1_AREA.text = ""
     modules.globals.CONTENT_2_AREA.text = ""
     modules.globals.CONTENT_3_AREA.text = ""
@@ -71,6 +71,15 @@ def display_screen(menu_on, screen_index):
             modules.globals.CONTENT_1_AREA.text = "Hey! Let's ferment."
             modules.globals.CONTENT_5_AREA.text = "⚙ ⚙ ⚙"
         elif screen_index == 1:
+            # Select mode
+            modules.globals.CONTENT_1_AREA.text = "Choose a mode for"
+            modules.globals.CONTENT_2_AREA.text = "your fermentation"
+            modules.globals.CONTENT_5_AREA.text = modules.globals.modes[modules.globals.modes_index][0]
+            modules.globals.CONTENT_5_AREA.color = 0x000000
+            modules.globals.CONTENT_5_AREA.background_color = 0xFFFFFF
+            modules.globals.MENU_LEFT_AREA.text = "↓"
+            modules.globals.MENU_RIGHT_AREA.text = "↑"
+        elif screen_index == 2:
             temp_target = os.getenv('target_temperature')
             modules.globals.CONTENT_1_AREA.text = " What's the ideal"
             modules.globals.CONTENT_2_AREA.text = "temperature for you"
@@ -81,7 +90,7 @@ def display_screen(menu_on, screen_index):
             modules.globals.CONTENT_5_AREA.background_color = 0xFFFFFF
             modules.globals.MENU_LEFT_AREA.text = "↓"
             modules.globals.MENU_RIGHT_AREA.text = "↑"
-        elif screen_index == 2:
+        elif screen_index == 3:
             timer_hours = os.getenv('timer_hours')
             modules.globals.CONTENT_1_AREA.text = " For how long do"
             modules.globals.CONTENT_2_AREA.text = "you want to ferment?"
@@ -91,7 +100,7 @@ def display_screen(menu_on, screen_index):
             modules.globals.CONTENT_5_AREA.background_color = 0xFFFFFF
             modules.globals.MENU_LEFT_AREA.text = "↓"
             modules.globals.MENU_RIGHT_AREA.text = "↑"
-        elif screen_index == 3:
+        elif screen_index == 4:
             modules.globals.CONTENT_1_AREA.text = "It's all set."
             modules.globals.CONTENT_2_AREA.text = "Remember to check me"
             modules.globals.CONTENT_3_AREA.text = "every now and then."
@@ -113,6 +122,14 @@ def display_screen(menu_on, screen_index):
             modules.globals.CONTENT_1_AREA.text = " Set: Timer"
             modules.globals.CONTENT_5_AREA.text = modules.utilities.timer_unit(int(modules.globals.timer_hours))
         elif screen_index == 3:
+            modules.globals.CONTENT_1_AREA.text = "I'm fermenting"
+            if not modules.globals.manual_on:
+                modules.globals.CONTENT_2_AREA.text = "in automatic mode."
+            else:
+                modules.globals.CONTENT_2_AREA.text = "in manual mode."
+            modules.globals.CONTENT_3_AREA.text = "Want to change?"    
+            modules.globals.CONTENT_5_AREA.text = modules.globals.bool_string
+        elif screen_index == 4:
             modules.globals.CONTENT_1_AREA.text = "Domingo Fermenter"
             modules.globals.CONTENT_2_AREA.text = modules.globals.SOFTWARE_VERSION
             modules.globals.CONTENT_3_AREA.text = "domingoclub.com"

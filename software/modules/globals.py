@@ -1,5 +1,6 @@
 import os
 import time
+import modes
 
 def initialize():
 
@@ -7,6 +8,16 @@ def initialize():
     SOFTWARE_VERSION = "software v0.9.8.3"
 
     global SENSOR
+
+    global modes
+    modes = modes.modes
+    modes.append(["Manual"])
+
+    global modes_index
+    modes_index = 0
+
+    global mode
+    mode = ""
 
     global temp
     temp = os.getenv('target_temperature')
@@ -50,6 +61,9 @@ def initialize():
     global menu_on
     menu_on = False
 
+    global manual_on
+    manual_on = False
+
     global edit_mode
     edit_mode = True
 
@@ -60,10 +74,13 @@ def initialize():
     DELAY_ACTIONS = 1
 
     global SCREENS_INTRO
-    SCREENS_INTRO = ["header", "define_temp", "define_time", "all_set"]
+    SCREENS_INTRO = ["header", "select_mode", "define_temp", "define_time", "all_set"]
 
     global SCREENS_MENU
-    SCREENS_MENU = ["dashboard", "define_temp", "define_time", "footer"]
+    SCREENS_MENU = ["dashboard", "define_temp", "define_time", "change_mode", "footer"]
+
+    global bool_string
+    bool_string = "No thanks"
 
     global status_sentence
     status_sentence = ""
