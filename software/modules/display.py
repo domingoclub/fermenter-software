@@ -122,12 +122,9 @@ def display_screen(menu_on, manual_on, screen_index):
             modules.globals.CONTENT_1_AREA.text = " Set: Timer"
             modules.globals.CONTENT_5_AREA.text = modules.utilities.timer_unit(int(modules.globals.timer_hours))
         elif screen_index == 3:
-            modules.globals.CONTENT_1_AREA.text = "I'm fermenting"
-            if not modules.globals.manual_on:
-                modules.globals.CONTENT_2_AREA.text = "in automatic mode."
-            else:
-                modules.globals.CONTENT_2_AREA.text = "in manual mode."
-            modules.globals.CONTENT_3_AREA.text = "Want to change?"    
+            modules.globals.CONTENT_1_AREA.text = "Fermenting in mode"
+            modules.globals.CONTENT_2_AREA.text = "↳ {}".format(modules.globals.modes[modules.globals.modes_index][0])
+            modules.globals.CONTENT_3_AREA.text = "Want to change?"
             modules.globals.CONTENT_5_AREA.text = modules.globals.bool_string
         elif screen_index == 4:
             modules.globals.CONTENT_1_AREA.text = "Domingo Fermenter"

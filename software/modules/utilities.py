@@ -26,3 +26,5 @@ def timer_unit(hour):
         time_unit = str(int(hour // 24)) + " days"
     return time_unit
 
+def map_range(x, in_min, in_max, out_min, out_max):
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min

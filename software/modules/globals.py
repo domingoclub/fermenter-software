@@ -5,7 +5,7 @@ import modes
 def initialize():
 
     global SOFTWARE_VERSION
-    SOFTWARE_VERSION = "software v0.9.8.3"
+    SOFTWARE_VERSION = "software v0.9.9.1"
 
     global SENSOR
 
@@ -54,6 +54,9 @@ def initialize():
 
     global screen_index
     screen_index = 0
+
+    global total_increment
+    total_increment = 0
 
     global menu_on
     menu_on = False

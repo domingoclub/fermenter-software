@@ -32,7 +32,5 @@ if __name__ == "__main__":
                 modules.globals.time_sensor = time.time()
 
             modules.heating_system.timer()
-
-            if modules.globals.fermenter_running:
-                modules.heating_system.update_target_temp(modules.globals.time_left, modules.globals.modes[modules.globals.modes_index])
-                modules.heating_system.heating_system(modules.globals.temp, modules.globals.temp_target, modules.globals.TEMP_MARGIN)
+            modules.heating_system.update_target_temp(modules.globals.time_left, modules.globals.modes[modules.globals.modes_index])
+            modules.heating_system.heating_system(modules.globals.temp, modules.globals.temp_target, modules.globals.TEMP_MARGIN)

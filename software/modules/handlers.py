@@ -3,7 +3,7 @@ import rotaryio
 import board
 import time
 import modules.globals
-import supervisor
+import os
 
 
 ENCODER = rotaryio.IncrementalEncoder(board.GP4, board.GP3)
@@ -30,22 +30,23 @@ def edit_handler(increment):
         screen = modules.globals.SCREENS_INTRO[modules.globals.screen_index]
     else:
         screen = modules.globals.SCREENS_MENU[modules.globals.screen_index]
-    if screen == "select_mode" or screen == "change_mode":
-        modules.globals.modes_index += increment  * 2
+    if screen == "select_mode":
+        modules.globals.modes_index += increment * 2
         if modules.globals.modes_index >= len(modules.globals.modes):
             modules.globals.modes_index = 0
         elif  modules.globals.modes_index < 0:
             modules.globals.modes_index = len(modules.globals.modes) -1
         else:
             modules.globals.modes_index = int(modules.globals.modes_index)
-        if screen == "select_mode":
-            modules.globals.CONTENT_5_AREA.text = modules.globals.modes[modules.globals.modes_index][0]
+        modules.globals.CONTENT_5_AREA.text = modules.globals.modes[modules.globals.modes_index][0]
+    elif screen == "change_mode":
+        modules.globals.total_increment += increment * 2
+        print(modules.globals.total_increment)
+        if modules.globals.total_increment % 2 == 0:
+            modules.globals.bool_string = "Yes please"
         else:
-            if modules.globals.modes_index % 2 == 0:
-                modules.globals.bool_string = "Yes please"
-            else:
-                modules.globals.bool_string = "No thanks"
-            modules.globals.CONTENT_5_AREA.text = modules.globals.bool_string
+            modules.globals.bool_string = "No thanks"
+        modules.globals.CONTENT_5_AREA.text = modules.globals.bool_string
     elif screen == "define_temp":
         update_temp_values(increment)
         modules.globals.CONTENT_5_AREA.text = "{} C".format(modules.utilities.round_down(modules.globals.temp_target, 1))
@@ -128,6 +129,8 @@ def button_actions():
                         modules.globals.manual_on = False
                         modules.globals.edit_mode = True
                         modules.globals.modes_index = 0
+                        modules.globals.temp_target = os.getenv('target_temperature')
+                        modules.globals.timer_hours = os.getenv('timer_hours')
                         modules.menu.goto("select_mode", "Set!")
                     else:
                         modules.menu.goto("dashboard", "Set!")

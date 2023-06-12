@@ -69,7 +69,7 @@ def update_led(color, steps):
             else: led_rewind = False
     else:
         led_counter = 120
-    
+
     if color == "red":
         color_red = (led_counter, 0, 0, 0)
         LED.color = color_red if LED_MODEL == "onboard" else LED.fill(color_red)
@@ -88,8 +88,8 @@ def update_led(color, steps):
     elif color == "purple":
         color_purple = (led_counter, 0, led_counter, 0)
         LED.color = color_purple if LED_MODEL == "onboard" else LED.fill(color_purple)
-    
-        
+
+
 
 def air_circulation(time_diff, interval, duration):
     # fan on for x seconds every x seconds
@@ -111,6 +111,7 @@ def heating_system(temp, temp_target, temp_margin):
     time_now = time.time()
     time_diff = time_now - modules.globals.time_heater
 
+    print(modules.globals.fermenter_running)
     if modules.globals.fermenter_running:
         if not modules.globals.sensor_error:
             if temp > temp_target + temp_margin * 2:
@@ -148,16 +149,17 @@ def heating_system(temp, temp_target, temp_margin):
 
         update_status_sentence()
         update_values()
-    
+
     else:
+        print('expired')
         modules.globals.status_sentence = " Timer expired."
         modules.globals.status_subsentence = "How did it go?"
         update_led('white', 60)
+        HEAT.duty_cycle = 0
         if temp >= modules.globals.TEMP_SAFE:
             FAN.duty_cycle = modules.utilities.percent_to_duty_cycles(100)
         else:
             FAN.duty_cycle = 0
-        HEAT.duty_cycle = 0
 
 def update_target_temp(time_left, mode):
     if not modules.globals.manual_on:
@@ -166,8 +168,9 @@ def update_target_temp(time_left, mode):
         for i in mode[1]:
             iindex = index + 1 if index + 1 <= len(mode[1]) else index
             if (mode[1][index] * 3600) < time_left_diff < (mode[1][iindex] * 3600):
-                # convert to percentage
-                modules.globals.temp_target = (mode[2][index] + mode[2][iindex]) / 2
-                print(modules.globals.temp_target)
+                # convert time to percentage
+                time_diff_percent = 100 * float(time_left_diff) / float((mode[1][iindex] * 3600) - (mode[1][index] * 3600))
+                # calculate in-between temp according to time percentage
+                new_tempeh_target = modules.utilities.map_range(time_diff_percent, 0, 100, mode[2][index], mode[2][iindex])
+                modules.globals.temp_target = modules.utilities.round_down(new_tempeh_target, 1)
             index += 1
-            
