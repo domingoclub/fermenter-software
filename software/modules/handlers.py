@@ -41,8 +41,7 @@ def edit_handler(increment):
         modules.globals.CONTENT_5_AREA.text = modules.globals.modes[modules.globals.modes_index][0]
     elif screen == "change_mode":
         modules.globals.total_increment += increment * 2
-        print(modules.globals.total_increment)
-        if modules.globals.total_increment % 2 == 0:
+        if not modules.globals.total_increment % 2 == 0:
             modules.globals.bool_string = "Yes please"
         else:
             modules.globals.bool_string = "No thanks"
@@ -125,12 +124,18 @@ def button_actions():
                     if screen == "define_time":
                         modules.globals.time_startup = time.time()
                     if screen == "change_mode" and modules.globals.bool_string == "Yes please":
+                        # re initialize
                         modules.globals.menu_on = False
                         modules.globals.manual_on = False
                         modules.globals.edit_mode = True
                         modules.globals.modes_index = 0
-                        modules.globals.temp_target = os.getenv('target_temperature')
-                        modules.globals.timer_hours = os.getenv('timer_hours')
+                        modules.globals.time_startup = time.time()
+                        modules.globals.time_heater = time.time()
+                        modules.globals.time_sensor = time.time()
+                        modules.globals.temp = os.getenv('manual_target_temperature')
+                        modules.globals.temp_target = os.getenv('manual_target_temperature')
+                        modules.globals.timer_hours = os.getenv('manual_timer_hours')
+                        modules.globals.time_left = modules.globals.timer_hours
                         modules.menu.goto("select_mode", "Set!")
                     else:
                         modules.menu.goto("dashboard", "Set!")

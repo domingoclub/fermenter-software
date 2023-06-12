@@ -34,19 +34,19 @@ SCREEN.append(BG_SPRITE)
 
 # Text areas
 modules.globals.CONTENT_1_AREA = label.Label(
-    FONT, text="", color=0xFFFFFF, x=5, y=5)
+    FONT, text="", color=0xFFFFFF, x=5, y=6)
 modules.globals.CONTENT_2_AREA = label.Label(
-    FONT, text="", color=0xFFFFFF, x=5, y=19)
+    FONT, text="", color=0xFFFFFF, x=5, y=21)
 modules.globals.CONTENT_3_AREA = label.Label(
-    FONT, text="", color=0xFFFFFF, x=5, y=34)
+    FONT, text="", color=0xFFFFFF, x=5, y=36)
 modules.globals.CONTENT_4_AREA = label.Label(
-    FONT, text="", color=0xFFFFFF, x=5, y=41)
+    FONT, text="", color=0xFFFFFF, x=5, y=43)
 modules.globals.CONTENT_5_AREA = label.Label(
-    FONT, text="", color=0xFFFFFF, x=5, y=56)
+    FONT, text="", color=0xFFFFFF, x=5, y=57)
 modules.globals.MENU_LEFT_AREA = label.Label(
-    FONT, text="", color=0xFFFFFF, x=114, y=56)
+    FONT, text="", color=0xFFFFFF, x=114, y=57)
 modules.globals.MENU_RIGHT_AREA = label.Label(
-    FONT, text="", color=0xFFFFFF, x=123, y=56)
+    FONT, text="", color=0xFFFFFF, x=123, y=57)
 SCREEN.append(modules.globals.CONTENT_1_AREA)
 SCREEN.append(modules.globals.CONTENT_2_AREA)
 SCREEN.append(modules.globals.CONTENT_3_AREA)
@@ -74,13 +74,14 @@ def display_screen(menu_on, manual_on, screen_index):
             # Select mode
             modules.globals.CONTENT_1_AREA.text = "Choose a mode for"
             modules.globals.CONTENT_2_AREA.text = "your fermentation"
-            modules.globals.CONTENT_5_AREA.text = modules.globals.modes[modules.globals.modes_index][0]
+            modules.globals.CONTENT_5_AREA.text = modules.globals.modes[
+                modules.globals.modes_index][0]
             modules.globals.CONTENT_5_AREA.color = 0x000000
             modules.globals.CONTENT_5_AREA.background_color = 0xFFFFFF
             modules.globals.MENU_LEFT_AREA.text = "↓"
             modules.globals.MENU_RIGHT_AREA.text = "↑"
         elif screen_index == 2:
-            temp_target = os.getenv('target_temperature')
+            modules.globals.temp_target = os.getenv('manual_target_temperature')
             modules.globals.CONTENT_1_AREA.text = " What's the ideal"
             modules.globals.CONTENT_2_AREA.text = "temperature for you"
             modules.globals.CONTENT_3_AREA.text = "fermentation?"
@@ -91,7 +92,7 @@ def display_screen(menu_on, manual_on, screen_index):
             modules.globals.MENU_LEFT_AREA.text = "↓"
             modules.globals.MENU_RIGHT_AREA.text = "↑"
         elif screen_index == 3:
-            timer_hours = os.getenv('timer_hours')
+            modules.globals.timer_hours = os.getenv('manual_timer_hours')
             modules.globals.CONTENT_1_AREA.text = " For how long do"
             modules.globals.CONTENT_2_AREA.text = "you want to ferment?"
             modules.globals.CONTENT_5_AREA.text = modules.utilities.timer_unit(
@@ -117,13 +118,16 @@ def display_screen(menu_on, manual_on, screen_index):
             modules.heating_system.update_values()
         elif screen_index == 1:
             modules.globals.CONTENT_1_AREA.text = " Set: Temperature"
-            modules.globals.CONTENT_5_AREA.text = "{} C".format(modules.utilities.round_down(modules.globals.temp_target, 1))
+            modules.globals.CONTENT_5_AREA.text = "{} C".format(
+                modules.utilities.round_down(modules.globals.temp_target, 1))
         elif screen_index == 2:
             modules.globals.CONTENT_1_AREA.text = " Set: Timer"
-            modules.globals.CONTENT_5_AREA.text = modules.utilities.timer_unit(int(modules.globals.timer_hours))
+            modules.globals.CONTENT_5_AREA.text = modules.utilities.timer_unit(
+                int(modules.globals.timer_hours))
         elif screen_index == 3:
             modules.globals.CONTENT_1_AREA.text = "Fermenting in mode"
-            modules.globals.CONTENT_2_AREA.text = "↳ {}".format(modules.globals.modes[modules.globals.modes_index][0])
+            modules.globals.CONTENT_2_AREA.text = "↳ {}".format(
+                modules.globals.modes[modules.globals.modes_index][0])
             modules.globals.CONTENT_3_AREA.text = "Want to change?"
             modules.globals.CONTENT_5_AREA.text = modules.globals.bool_string
         elif screen_index == 4:

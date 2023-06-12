@@ -111,7 +111,6 @@ def heating_system(temp, temp_target, temp_margin):
     time_now = time.time()
     time_diff = time_now - modules.globals.time_heater
 
-    print(modules.globals.fermenter_running)
     if modules.globals.fermenter_running:
         if not modules.globals.sensor_error:
             if temp > temp_target + temp_margin * 2:
@@ -147,30 +146,36 @@ def heating_system(temp, temp_target, temp_margin):
             modules.globals.status_subsentence = "not responding"
             update_led('purple', 40)
 
-        update_status_sentence()
-        update_values()
-
     else:
-        print('expired')
         modules.globals.status_sentence = " Timer expired."
         modules.globals.status_subsentence = "How did it go?"
-        update_led('white', 60)
+        update_led('white', 40)
         HEAT.duty_cycle = 0
         if temp >= modules.globals.TEMP_SAFE:
             FAN.duty_cycle = modules.utilities.percent_to_duty_cycles(100)
         else:
             FAN.duty_cycle = 0
+            
+    update_status_sentence()
+    update_values()
 
 def update_target_temp(time_left, mode):
-    if not modules.globals.manual_on:
+    if modules.globals.fermenter_running and not modules.globals.manual_on:
         time_left_diff = modules.globals.timer_hours * 3600 - time_left
         index = 0
         for i in mode[1]:
             iindex = index + 1 if index + 1 <= len(mode[1]) else index
             if (mode[1][index] * 3600) < time_left_diff < (mode[1][iindex] * 3600):
                 # convert time to percentage
-                time_diff_percent = 100 * float(time_left_diff) / float((mode[1][iindex] * 3600) - (mode[1][index] * 3600))
+                percent_part = float(time_left_diff - (mode[1][index] * 3600) )
+                percent_whole = float((mode[1][iindex] * 3600) - (mode[1][index] * 3600))
+                time_diff_percent = 100 * percent_part / percent_whole
+                # print("time percent: " + str(time_diff_percent))
                 # calculate in-between temp according to time percentage
-                new_tempeh_target = modules.utilities.map_range(time_diff_percent, 0, 100, mode[2][index], mode[2][iindex])
-                modules.globals.temp_target = modules.utilities.round_down(new_tempeh_target, 1)
+                new_temp_target = modules.utilities.map_range(time_diff_percent, 0, 100, mode[2][index], mode[2][iindex])
+                # print("temp percent: " + str(new_temp_target))
+                modules.globals.temp_target = modules.utilities.round_down(new_temp_target, 2)
+                # print("TIME: from:" + str(mode[1][index]) + " / to:" + str(mode[1][iindex]))
+                # print("TEMP: from:" + str(mode[2][index]) + " / to:" + str(mode[2][iindex]))
+                print("TEMP TARGET: " + str(modules.globals.temp_target))
             index += 1

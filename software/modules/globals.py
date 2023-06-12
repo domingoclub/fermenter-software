@@ -17,10 +17,10 @@ def initialize():
     modes_index = 0
 
     global temp
-    temp = os.getenv('target_temperature')
+    temp = os.getenv('manual_target_temperature')
 
     global temp_target
-    temp_target = os.getenv('target_temperature')
+    temp_target = os.getenv('manual_target_temperature')
 
     global time_startup
     time_startup = time.time()
@@ -32,7 +32,7 @@ def initialize():
     time_sensor = time.time()
 
     global timer_hours
-    timer_hours = os.getenv('timer_hours')
+    timer_hours = os.getenv('manual_timer_hours')
 
     global time_left
     time_left = timer_hours
