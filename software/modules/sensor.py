@@ -19,9 +19,6 @@ if SENSOR_MODEL == "aht20":
 def sensor_start():
     try:
         SENSOR_I2C = busio.I2C(board.GP13, board.GP12)
-    except Exception as e:
-        print(e)
-    try:
         if SENSOR_MODEL == "sht31d":
             modules.globals.SENSOR = adafruit_sht31d.SHT31D(SENSOR_I2C)
         if SENSOR_MODEL == "mcp9808":
