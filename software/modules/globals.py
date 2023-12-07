@@ -5,7 +5,7 @@ import modes
 def initialize():
 
     global SOFTWARE_VERSION
-    SOFTWARE_VERSION = "software v0.9.9.6"
+    SOFTWARE_VERSION = "software v0.9.9.7"
 
     global SENSOR
 
