@@ -2,7 +2,7 @@
 fermenter_model = "mini"          # mini or lab
 manual_target_temperature = 30
 manual_timer_hours = 48
-sensor_model = "sht31d"           # sht31d or mcp9808 or aht20 or ds18b20
-display_orientation = "reversed" # normal or reversed
-led_model = "external"           # external or onboard
-default_mode = "default"         # default or manual
+sensor_model = "ds18b20"          # sht31d or mcp9808 or aht20 or ds18b20
+display_orientation = "reversed"  # normal or reversed
+led_model = "external"            # external or onboard
+default_mode = "default"          # default or manual
