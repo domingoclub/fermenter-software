@@ -30,7 +30,10 @@ def timer():
     time_now = time.time()
     timer_sec = modules.globals.timer_hours * 3600
     time_since_startup = time_now - modules.globals.time_startup
-    modules.globals.time_left = timer_sec - time_since_startup
+    if not modules.globals.exhibition_on:
+        modules.globals.time_left = timer_sec - time_since_startup
+    else:
+        modules.globals.time_left = timer_sec - 3600
     if modules.globals.time_left > 1:
         modules.globals.fermenter_running = True
     else:

@@ -13,6 +13,8 @@ def start_introduction():
         modules.display.display_screen(modules.globals.menu_on, modules.globals.manual_on, modules.globals.screen_index)
     else:
         modules.globals.manual_on = True
+        if DEFAULT_MODE == "exhibition":
+            modules.globals.exhibition_on = True
         modules.display.display_screen(modules.globals.menu_on, modules.globals.manual_on, 0)
         goto("dashboard", "")
 

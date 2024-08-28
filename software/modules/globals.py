@@ -5,7 +5,7 @@ import modes
 def initialize():
 
     global SOFTWARE_VERSION
-    SOFTWARE_VERSION = "software v1.0"
+    SOFTWARE_VERSION = "software v1.1"
 
     global SENSOR
 
@@ -63,6 +63,9 @@ def initialize():
 
     global manual_on
     manual_on = False
+
+    global exhibition_on
+    exhibition_on = False
 
     global edit_mode
     edit_mode = True

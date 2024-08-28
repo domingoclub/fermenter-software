@@ -23,7 +23,10 @@ if __name__ == "__main__":
 
             if time_sensor_diff >= 2:
                 try:
-                    modules.globals.temp = modules.globals.SENSOR.temperature
+                    if not modules.globals.exhibition_on:
+                        modules.globals.temp = modules.globals.SENSOR.temperature
+                    else:
+                        modules.globals.temp = modules.globals.temp_target + 0.1
                     modules.globals.sensor_error = False
                 except Exception as e:
                     print(e)
